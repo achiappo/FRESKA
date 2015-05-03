@@ -299,7 +299,7 @@ def gasdev(idum):
       v1=2.*ran1(idum)-1.
       v2=2.*ran1(idum)-1.
       rsq=v1**2+v2**2
-    fac=sqrt(-2.*math.log[rsq]/rsq)
+    fac=math.sqrt(-2.*math.log(rsq)/rsq)
     gset=v1*fac
     gasdev=v2*fac
     iset=1
@@ -353,7 +353,7 @@ def choldc(a,n,np,p):
         if(sum <= 0.):
           print 'choldc failed'
           break
-        p[i]=sqrt(sum)
+        p[i]=math.sqrt(sum)
       else:
         a[j,i]=sum/p[i]
           endif
@@ -398,9 +398,9 @@ def jacobi(a,n,np,d,v,nrot):
           t=a[ip,iq]/h
         else:
           theta=0.5*h/a[ip,iq]
-          t=1./(abs(theta)+sqrt(1.+theta**2))
+          t=1./(abs(theta)+math.sqrt(1.+theta**2))
           if(theta <0.): t=-t
-        c=1./sqrt(1+t**2)
+        c=1./math.sqrt(1+t**2)
         s=t*c
         tau=s/(1.+c)
         h=t*a[ip,iq]
@@ -467,7 +467,7 @@ def moment(data1,n,ave,adev,sdev,var,skew,curt):
      curt=curt+p
   adev=adev/n
   var=(var-ep**2/n)/(n-1)
-  sdev=sqrt(var)
+  sdev=math.sqrt(var)
   if(var != 0.):
      skew=skew/(n*sdev**3)
      curt=curt/(n*var**2)-3.
@@ -689,3 +689,379 @@ def zbrent(func,x1,x2,tol):
       
 #---------------------------------------------------------------------------------      
 
+def sort(n,arr):
+  arr = np.empty([n])
+  M=7
+  NSTACK=50
+  istack = np.empty([NSTACK])
+  jstack=0
+  l=1
+  ir=n
+  while ir-l < M:
+    for j in range(l+1,ir):
+      a=arr[j]
+      for i i nrange(j-1,l,-1):
+        if(arr[i] < a):
+          arr(i+1)=a
+          break
+        arr[i+1]=arr[i]
+      i=l-1
+      arr(i+1)=a
+    if(jstack == 0): return arr
+    ir=istack[jstack]
+    l=istack[jstack-1]
+    jstack=jstack-2
+  else:
+    k=(l+ir)/2.
+    temp=arr[k]
+    arr[k]=arr[l+1]
+    arr[l+1]=temp
+    if(arr[l] > arr[ir]):
+      temp=arr[l]
+      arr[l]=arr[ir]
+      arr[ir]=temp
+    if(arr[l+1] > arr[ir]):
+      temp=arr[l+1]
+      arr[l+1]=arr[ir]
+      arr[ir]=temp
+    if(arr[l] > arr[l+1]):
+      temp=arr[l]
+      arr[l]=arr[l+1]
+      arr[l+1]=temp
+    i=l+1
+    j=ir
+    a=arr[l+1]
+    while arr[i] < a and j > i:       #
+      i=i+1                           #
+      while (arr[j] > a):             #
+        j=j-1                         #     POTENTIAL SOURCE OF BUGS
+        temp=arr[i]                   #     (ll. 904-912 fortran)
+        arr[i]=arr[j]                 #
+        arr[j]=temp                   #
+    arr[l+1]=arr[j]                   #
+    arr[j]=a
+    jstack=jstack+2
+    if(jstack > NSTACK):
+      print 'NSTACK too small in sort'
+      break
+    if(ir-i+1 >= j-l):
+      istack[jstack]=ir
+      istack[jstack-1]=i
+      ir=j-1
+    else:
+      istack[jstack]=j-1
+      istack[jstack-1]=l
+      l=i
+
+#---------------------------------------------------------------------------------
+
+def sort3(n,ra,rb,rc,wksp,iwksp):
+      ra    = np.empty([n])
+      rb    = np.empty([n])
+      rc    = np.empty([n])
+      iwksp = np.empty([n])
+      wksp  = np.empty([n])
+      for j in range(1,n)
+        wksp[j]=ra[j]
+      for j in range(1,n)
+        ra[j]=wksp[iwksp[j]]
+      for j in range(1,n)
+        wksp[j]=rb[j]
+      for j in range(1,n)
+        rb(j)=wksp[iwksp[j]]
+      for j in range(1,n)
+        wksp[j]=rc[j]
+      for j in range(1,n)
+        rc[j]=wksp[iwksp[j]]
+      return wksp,ra,rb,rc   # CHECK RETURN VALUE
+
+#---------------------------------------------------------------------------------
+
+def indexx(n,arr,indx):
+  indx = np.empty([n])
+  arr = np.empty([n])
+  M=7
+  NSTACK=50
+  istack = np.empty([NSTACK])
+
+  for j in range(1,n):
+    indx[j]=j
+    jstack=0
+    l=1
+    ir=n
+    while (ir-l < M):
+      if (ir-l < M):
+        for j in range(l+1,ir):
+          indxt=indx[j]
+          a=arr[indxt]
+          for i in range(j-1,1,-1):                       #
+            while (arr[indx[i]] <= a) is False:           # POTENTIAL SOURCE OF BUGS
+              indx[i+1]=indx[i]                           # (ll. 978-983 fortran)
+          i=0                                             #
+          indx(i+1)=indxt                                 #
+        if(jstack == 0): return arr   # CHECK RETURN VALUE
+        ir=istack[jstack]
+        l=istack[jstack-1]
+        jstack-=2
+      else:
+        k=(l+ir)/2.
+        itemp=indx[k]
+        indx[k]=indx[l+1]
+        indx[l+1]=itemp
+        if(arr[indx[l+1]] > arr[indx[ir]]):
+          itemp=indx(l+1)
+          indx[l+1]=indx[ir]
+          indx[ir]=itemp
+        if(arr[indx[l]] > arr[indx[ir]]):
+          itemp=indx[l]
+          indx[l]=indx[ir]
+          indx[ir]=itemp
+        if(arr[indx[l+1]] > arr[indx[l]]):
+          itemp=indx[l+1]
+          indx[l+1]=indx[l]
+          indx[l]=itemp
+        i=l+1
+        j=ir
+        indxt=indx[l]
+        a=arr[indxt]
+        while (arr[indx[i]] < a):                   #
+          i=i+1                                     #
+        while (arr[indx[j]] > a):                   #
+          j=j-1                                     #    POTENTIAL SOURCE OF BUGS
+        while (j < i):                              #      (ll. 1014-1018 fortran)
+          itemp=indx[i]                             #
+          indx[i]=indx[j]                           #
+          indx[j]=itemp                             #
+          goto 3                                    #
+        indx[l]=indx[j]                             #
+        indx(j)=indxt
+        jstack+=2
+        if(jstack > NSTACK):
+          print 'NSTACK too small in indexx'
+          break
+        if(ir-i+1 >= j-l):
+          istack[jstack]=ir
+          istack[jstack-1]=i
+          ir=j-1
+        else:
+          istack[jstack]=j-1
+          istack[jstack-1]=l
+          l=i
+
+#---------------------------------------------------------------------------------
+
+def qtrap(func,a,b,s):
+  EPS=1.e-6
+  JMAX=20
+  olds=0.
+  for j in range(1,JMAX):
+    trapzd(func,a,b,s,j)
+    if (j > 5):
+      if (abs(s-olds) < EPS*abs(olds) or (s == 0. and olds == 0.)): return      
+    olds=s
+  print 'too many steps in qtrap'
+  break
+
+#---------------------------------------------------------------------------------
+
+def trapzd(func,a,b,s,n):
+  if (n == 1):
+    s=0.5*(b-a)*(func(a)+func(b))
+  else:
+    it=2**(n-2)
+    tnm=it
+    de=(b-a)/tnm
+    x=a+0.5*de
+    su=0.
+    for j in range(1,it):
+      su+=func(x)
+          x+=de
+    s=0.5*(s+(b-a)*su/tnm)
+  return s
+
+#---------------------------------------------------------------------------------
+
+def erf(x):
+  if(x < 0.):
+    erf=-gammp(.5e0,x**2)
+  else:
+    erf=gammp(.500,x**2)
+  return
+
+#---------------------------------------------------------------------------------
+
+#     Linear equation solution by Gauss-Jordan elimination, equation 
+#     (2.1.1) above. a(1:n,1:n) is an input matrix stored in an array 
+#     of physical dimensions np by np. b(1:n,1:m) is an input matrix 
+#     containing the m right-hand side vectors, stored in an array of 
+#     physical dimensions np by mp. On output, a(1:n,1:n) is replaced 
+#     by its matrix inverse, and b(1:n,1:m) is replaced by the 
+#     corresponding set of solution vectors.
+#     Parameter: NMAX is the largest anticipated value of n.
+
+def gaussj(a,n,np,b,m,mp):
+  a = np.empty([np,np])
+  b = np.empty([np,np])
+  indxc = np.empty([NMAX])
+  indxr = np.empty([NMAX])
+  ipiv  = np.empty([NMAX])
+  NMAX=50
+  for j in range(1,n):
+    ipiv[j]=0
+  for i in range(1,n):
+    big=0.
+    for j in range(1,n):
+      if(ipiv[j] != 1):
+      for k in range(1,n):
+        if (ipiv[k] == 0):
+          if (abs(a[j,k]) >= big):
+            big=abs(a[j,k])
+            irow=j
+            icol=k
+  ipiv[icol]+=1
+
+#     We now have the pivot element, so we interchange rows, if needed, 
+#     to put the pivot element on the diagonal. The columns are not 
+#     physically interchanged, only relabeled:
+#     indxc(i), the column of the ith pivot element, is the ith column 
+#     that is reduced, while indxr(i) is the row in which that pivot 
+#     element was originally located. If indxr(i) =indxc(i) there is an 
+#     implied column interchange. With this form of bookkeeping, the
+#     solution b's will end up in the correct order, and the inverse 
+#     matrix will be scrambled by columns.
+
+  if (irow != icol):
+    for l in range(1,n):
+      dum=a[irow,l]
+      a[irow,l]=a[icol,l]
+      a[icol,l]=dum
+    for lin range(1,m):
+      dum=b[irow,l]
+      b[irow,l]=b[icol,l]
+      b[icol,l]=dum       
+  indxr[i]=irow
+  indxc[i]=icol
+  if (a[icol,icol] == 0.):
+    print 'singular matrix in gaussj'
+    break
+  pivinv=1./a[icol,icol]
+  a[icol,icol]=1.
+  for l in range(1,n):
+    a[icol,l]=a[icol,l]*pivinv
+  for l in range(1,m):
+    b[icol,l]=b[icol,l]*pivinv
+  for ll in range(1,n):           # Next, we reduce the rows...
+    if(ll != icol):               #...except for the pivot one, of course.
+      dum=a[ll,icol]
+      a[ll,icol]=0.
+      for l in range(1,n):
+        a[ll,l]-=a[icol,l]*dum 
+      for l in range(1,m):
+        b(ll,l)-=b(icol,l)*dum  
+  for l in range(n,1,-1):
+    if(indxr[l] != indxc[l]):
+      for k in range(1,n):
+        dum=a[k,indxr[l]]
+        a[k,indxr[l]]=a[k,indxc[l]]
+        a[k,indxc[l]]=dum
+  return                          # And we are done.
+
+#---------------------------------------------------------------------------------
+
+def rebin(rc,nd,r,xin,xi):
+  r   = np.empty([])
+  xi  = np.empty([])
+  xin = np.empty([])
+  k=0
+  xo=0.
+  dr=0.
+  for i in range(1,nd-1):
+    while (rc > dr):
+      k=k+1
+      dr=dr+r[k]
+    if(k > 1): xo=xi[k-1]
+    xn=xi[k]
+    dr-=rc
+    xin[i]=xn-[xn-xo]dr/r[k]
+  for i in range(1,nd-1):
+    xi[i]=xin[i]
+  xi[nd]=1.
+  return
+
+#---------------------------------------------------------------------------------
+
+def fact(n):
+  if (n <= 0):
+    fact = 1
+    print  'n <=0 and fact = 0'
+    return
+  else:
+    fact = 1         
+  for i in range(1,n):
+    fact *= i
+    return
+
+#---------------------------------------------------------------------------------
+
+def ksone(data,n,func,d,prob)  :
+  data = np.empty([n])
+  sort(n,data)
+  en=n
+  d=0.
+  fo=0.
+  for j in range(1,n  ):
+    fn=j/en
+    ff=func(data[j])
+    dt=max(abs(fo-ff),abs(fn-ff))
+    if(dt > d): d=dt
+    fo=fn
+  en=math.sqrt(en)
+  prob=probks((en+0.12+0.11/en)*d)  
+  return  
+
+#---------------------------------------------------------------------------------
+
+def kstwo(data1,n1,data2,n2,d,prob):
+  data1 = np.empty([n1])
+  data2 = np.empty([n2])
+  sort(n1,data1)
+  sort(n2,data2)
+  en1=n1  # sort(n1,data1)
+  en2=n2  # sort(n2,data2)
+  j1=1
+  j2=1
+  fn1=0.
+  fn2=0.
+  d=0.
+  while (j1 <= n1 and j2 <= n2):
+    d1=data1[j1]
+    d2=data2[j2]
+    if(d1 <= d2):
+      fn1=j1/en1
+      j1+=1  
+    if(d2 <= d1):
+      fn2=j2/en2
+      j2+=1  
+    dt=abs(fn2-fn1)  
+    if(dt > d): d=dt    
+  en=math.sqrt(en1*en2/(en1+en2))
+  prob=probks((en+0.12+0.11/en)*d)
+  return  
+
+#---------------------------------------------------------------------------------
+
+def probks(alam):
+  EPS1=0.001
+  EPS2=1.e-8
+  a2=-2.*alam**2
+  fac=2.
+  probks=0.
+  termbf=0.
+  for j in range(1,100):
+    term=fac*exp(a2*j**2)
+    probks+=term
+    if(abs(term) <= EPS1*termbf or abs(term) <= EPS2*probks): return  
+    fac=-fac
+    termbf=abs(term)  
+  probks=1.
+  return  
