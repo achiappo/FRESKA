@@ -9,7 +9,6 @@ def dfridr(func,x,h,err):
   SAFE = 2.
   if(h == 0.):
     print 'h must be nonzero in dfridr'
-    break
   hh = h
   a  = np.empty([NTAB,NTAB])
   a[1,1] = (func(x+hh)-func(x-hh))/(2.0*hh)
@@ -21,7 +20,7 @@ def dfridr(func,x,h,err):
     for j in range(1,i):
       a[j,i] = (a[j-1,i]*fac-a[j-1,i-1])/(fac-1.)
       fac = CON2*fac
-      errt = max(abs(a[j,i]-a[j-1,i]),abs[a(j,i]-a[j-1,i-1]))
+      errt = max(abs(a[j,i]-a[j-1,i]),abs(a[j,i]-a[j-1,i-1]))
       if (errt <= err):
         err = errt
         dfridr = a[j,i]
@@ -43,17 +42,17 @@ def rombint(f,a,b,tol):
   nint  = 1
   error = 1.0e20
   i = 1
-  while (i > MAXITER or (i > 5 and abs(error) < tol)) == False:
+  while i > MAXITER or (i > 5 and abs(error) < tol) :
     i = i+1                     # Calculate next trapezoidal rule approximation to integral.
     g0 = 0.0e0
-    for k=1 in range(nint):
+    for k in range(nint):
       g0 = g0+f(a+(k+k-1)*h) 
     g0 = 0.5e0*g[1]+h*g0
     h = 0.5e0*h
     nint *= 2
     jmax = min(i,MAXJ)
     fourj = 1.0e0
-    for j=1 in range(jmax):     # Use Richardson extrapolation.
+    for j in range(jmax):     # Use Richardson extrapolation.
       fourj = 4.0e0*fourj
       g1 = g0+(g0-g[j])/(fourj-1.0e0)
       g[j] = g0
@@ -65,10 +64,10 @@ def rombint(f,a,b,tol):
     gmax = g0
     g[jmax+1] = g0
   else:
-    rombint=g0
+    rombint = g0
   if (i > MAXITER and abs(error) > tol):
     print 'Rombint failed to converge; integral, error = ',rombint,' , ',error
-  return
+  return rombint
 
 #########################################################################################################
 #
@@ -124,7 +123,7 @@ def INTEGRATE(FUNC,fp,np,a,b,dxinit,eps):
 #
 ###################################################################################################################
 
- def RUNGE5VAR(y,dydx,x,htry,eps,yscale,hnext,DERIVS,fp,np):
+def RUNGE5VAR(y,dydx,x,htry,eps,yscale,hnext,DERIVS,fp,np):
   safety  =  0.9e0
   pgrow   = -0.2e0
   pshrink = -0.25e0
@@ -238,10 +237,10 @@ def spline(x,y,n,yp1,ypn,y2):
 #	returned: y
 
 def splint(xa,ya,y2a,n,x,y):
-	klo = 1
-	khi = n
+  klo = 1
+  khi = n
 
-  while khi-klo > 1:
+  while khi-klo > 1 :
     k=(khi+klo)/2
     if(xa[k] > x):
       khi=k
@@ -252,8 +251,6 @@ def splint(xa,ya,y2a,n,x,y):
 
   if(h == 0.): 
     print 'bad xa input in splint'
-    break
-  
   a = (xa[khi]-x)/h
   b = (x-xa[klo])/h
   y = a*ya[klo]+b*ya[khi]+((a**3-a)*y2a[klo]+(b**3-b)*y2a[khi])*(h**2)/6.
@@ -262,38 +259,37 @@ def splint(xa,ya,y2a,n,x,y):
 
 #---------------------------------------------------------------------------------
 
-#	returned: ran2
+# random numer generator2, returned: ran2
 
 def ran2(idum):
-	IM1   = 2147483563
- 	IM2   = 2147483399
- 	AM    = 1./IM1
- 	IMM1  = IM1-1
- 	IA1   = 40014
- 	IA2   = 40692
- 	IQ1   = 53668
- 	IQ2   = 52774
- 	IR1   = 12211
- 	IR2   = 3791
- 	NTAB  = 32
- 	NDIV  = 1+IMM1/NTAB
- 	EPS   = 1.2e-7
- 	RNMX  = 1.-EPS
- 	idum2 = 123456789
- 	iv    = np.zeros([NTAB])
- 	iy    = 0
+  IM1   = 2147483563
+  IM2   = 2147483399
+  AM    = 1./IM1
+  IMM1  = IM1-1
+  IA1   = 40014
+  IA2   = 40692
+  IQ1   = 53668
+  IQ2   = 52774
+  IR1   = 12211
+  IR2   = 3791
+  NTAB  = 32
+  NDIV  = 1+IMM1/NTAB
+  EPS   = 1.2e-7
+  RNMX  = 1.-EPS
+  idum2 = 123456789
+  iv    = np.zeros([NTAB])
+  iy    = 0
 
-	if (idum <= 0):
-		idum  = max(-idum,1)
-		idum2 = idum
-		for j in range(NTAB+8,0,-1):
-			k = idum/IQ1
-			idum = IA1*(idum-k*IQ1)-k*IR1
-			if (idum < 0): idum += IM1
-			if (j <= NTAB): iv[j] = idum
-	
-		iy = iv[0]
-  
+  if idum <= 0 :
+    idum  = max(-idum,1)
+    idum2 = idum
+    for j in range(NTAB+8,0,-1):
+      k = idum/IQ1
+      idum = IA1*(idum-k*IQ1)-k*IR1
+      if (idum < 0): idum += IM1
+      if (j <= NTAB): iv[j] = idum
+    iy = iv[0]
+
   k = idum/IQ1
   idum = IA1*(idum-k*IQ1)-k*IR1
   if (idum < 0): idum += IM1
@@ -306,264 +302,243 @@ def ran2(idum):
   if(iy < 1): iy += IMM1
   ran2 = min(AM*iy,RNMX)
 
-  return
+  return ran2
 
 #---------------------------------------------------------------------------------
 
 #	returned: gasdev
 
 def gasdev(idum):
-	iset = 0
-	rsq  = 0
-	if (iset == 0):
-		while rsq >= 1. or rsq == 0.:
-			v1  = 2.*ran1(idum)-1.
-			v2  = 2.*ran1(idum)-1.
-			rsq = v1**2+v2**2
-    
-  	fac = math.sqrt(-2.*math.log(rsq)/rsq)
-   	gset = v1*fac
-   	gasdev = v2*fac
-   	iset = 1
-  else:
-   	gasdev = gset
-   	iset = 0
+  iset = 0
+  rsq  = 0
+  if (iset == 0) :
+    while rsq >= 1. or rsq == 0.:
+      v1  = 2.*ran1(idum)-1.
+      v2  = 2.*ran1(idum)-1.
+      rsq = v1**2+v2**2  
   	
-  return
+    fac = math.sqrt(-2.*math.log(rsq)/rsq)
+    gset = v1*fac
+    gasdev = v2*fac
+    iset = 1
+  else:
+    gasdev = gset
+    iset = 0
+  	
+  return gasdev
 
 #---------------------------------------------------------------------------------
 
-#	returned: ran1
+# random numer generator2, returned: ran1
 
 def ran1(idum):
-	IA 	 = 16807
- 	IM   = 2147483647
- 	AM   = 1./IM
- 	IQ   = 127773
- 	IR 	 = 2836
- 	NTAB = 32
- 	NDIV = 1+(IM-1)/NTAB
- 	EPS  = 1.2e-7
- 	RNMX = 1.-EPS
- 	iv   = np.zeros([NTAB])
- 	iy   = 0
-
- 	if idum <= 0 or iy == 0:
+  IA 	 = 16807
+  IM   = 2147483647
+  AM   = 1./IM
+  IQ   = 127773
+  IR 	 = 2836
+  NTAB = 32
+  NDIV = 1+(IM-1)/NTAB
+  EPS  = 1.2e-7
+  RNMX = 1.-EPS
+  iv   = np.zeros([NTAB])
+  iy   = 0
+  if idum <= 0 or iy == 0:
     idum = max(-idum,1)
-   	for j in range(NTAB+8,0,-1):
-     		k = idum/IQ
-     		idum = IA*(idum-k*IQ)-IR*k
-     		if (idum < 0): idum += IM
-     		if (j <= NTAB): iv[j] = idum
-   	iy = iv[0]
-  	
- 	k = idum/IQ
- 	idum = IA*(idum-k*IQ)-IR*k
- 	if (idum < 0): idum += IM
- 	j = 1+iy/NDIV
- 	iy = iv[j]
- 	iv[j] = idum
- 	ran1 = min(AM*iy,RNMX)
-  	
- 	return
+    for j in range(NTAB+8,0,-1):
+      k = idum/IQ
+      idum = IA*(idum-k*IQ)-IR*k
+      if (idum < 0): idum += IM
+      if (j <= NTAB): iv[j] = idum
+    iy = iv[0]
+  
+  k = idum/IQ
+  idum = IA*(idum-k*IQ)-IR*k
+  if (idum < 0): idum += IM
+  j = 1+iy/NDIV
+  iy = iv[j]
+  iv[j] = idum
+  ran1 = min(AM*iy,RNMX)
+
+  return ran1
 
 #---------------------------------------------------------------------------------
 
 #	returned: a
 
 def choldc(a,n,np,p):
-  
- 	for i in range(0,n):
- 		for j in range(i,n):
-    		sum = a[i,j]
-      		for k in range(i-1,0,-1):
-        		sum -= a[i,k]*a[j,k]
-      		if(i == j):
-        		if(sum <= 0.):
-          		print 'choldc failed'
-          		break
-        		p[i] = math.sqrt(sum)
-      		else:
-	        	a[j,i]=sum/p[i]
-    	
-   return a,p                                    # CHECK RETURN VALUE
+  for i in range(0,n):
+    for j in range(i,n):
+      sum = a[i,j]
+      for k in range(i-1,0,-1):
+        sum -= a[i,k]*a[j,k]
+        if(i == j):
+          if(sum <= 0.):
+            print 'choldc failed'
+            break
+          p[i] = math.sqrt(sum)
+        else:
+          a[j,i]=sum/p[i]
+
+  return a                                    # CHECK RETURN VALUE
 
 #---------------------------------------------------------------------------------
 
 #	returned: a,d,v
 
 def jacobi(a,n,np,d,v,nrot):
-	NMAX=500
- 	b = np.empty([NMAX])
- 	z = np.empty([NMAX])
-  	
- 	for ip in range(n):
-   	for iq in range(n):
-     		v[ip,iq] = 0.
-   	v[ip,ip] = 1.
- 	for ip in range(n):
-   	b[ip] = a[ip,ip]
-   	d[ip] = b[ip]
-   	z[ip] = 0.
-  	
- 	nrot=0
- 	for i in range(50):
-   	sm=0.
-   	for ip in range(n-1):
-     		for iq in range(ip+1,n):
-     			sm += abs(a[ip,i])
- 		
-		if(sm == 0.): return
- 		if(i < 4):
+  NMAX = 500
+  b = np.empty([NMAX])
+  z = np.empty([NMAX])
+  for ip in range(n):
+    for iq in range(n):
+      v[ip,iq] = 0.
+    v[ip,ip] = 1.
+  for ip in range(n):
+    b[ip] = a[ip,ip]
+    d[ip] = b[ip]
+    z[ip] = 0.
+  nrot = 0
+  for i in range(50):
+    sm=0.
+    for ip in range(n-1):
+      for iq in range(ip+1,n):
+        sm += abs(a[ip,i])
+    if(sm == 0.): return a,d,v
+    if(i < 4):
       tresh = 0.2*sm/n**2
- 		else:
-   		tresh = 0.
-  		
- 		for ip in range(n-1):
-   		for iq in range(ip+1,n):
-     			g = 100.*abs(a[ip,iq])
-     			if (i > 4) and (abs(d[ip])+g == abs(d(ip))) and (abs(d[iq])+g == abs(d[iq])):
-       			a[p,iq]=0.
-     			elif abs(a[ip,iq]) > tresh:
-       			h=d[iq]-d[ip]
-       			if(abs[h]+g == abs[h]):
-         				t = a[ip,iq]/h
-       			else:
-         				theta = 0.5*h/a[ip,iq]
-         				t = 1./(abs(theta)+math.sqrt(1.+theta**2))
-         				if theta <0.: t = -t
-        
-       			c = 1./math.sqrt(1+t**2)
-       			s = t*c
-       			tau = s/(1.+c)
-       			h = t*a[ip,iq]
-       			z[ip] -= h
-       			z[iq] += h
-       			d[ip] -= h
-       			d[iq] += h
-       			a[ip,iq] = 0.
-       			for j in range(ip-1):
-       				g = a[j,ip]
-       				h = a[j,iq]
-       				a[j,ip] = g-s*(h+g*tau)
-       				a[j,iq] = h+s*(g-h*tau)
-       			
-       			for j in range(ip,iq-1):
-       				g = a[ip,j]
-       				h = a[j,iq]
-       				a[ip,j] = g-s*(h+g*tau)
-       				a[j,iq] = h+s*(g-h*tau)
-       
-        			for j in range(iq,n):
-        				g = a[ip,j]
-        				h = a[iq,j]
-         				a[ip,j] = g-s*(h+g*tau)
-         				a[iq,j] = h+s*(g-h*tau)
-        
-        			for j in range(n):
-        				g = v[j,ip]
-         				h = v[j,iq]
-        				v[j,ip] = g-s*(h+g*tau)
-        				v[j,iq] = h+s*(g-h*tau)
-        			
-       			nrot += 1
+    else:
+      tresh = 0.
+    for ip in range(n-1):
+      for iq in range(ip+1,n):
+        g = 100.*abs(a[ip,iq])
+        if (i > 4) and (abs(d[ip])+g == abs(d(ip))) and (abs(d[iq])+g == abs(d[iq])):
+          a[p,iq]=0.
+        elif abs(a[ip,iq]) > tresh:
+          h=d[iq]-d[ip]
+          if(abs[h]+g == abs[h]):
+            t = a[ip,iq]/h
+          else:
+            theta = 0.5*h/a[ip,iq]
+            t = 1./(abs(theta)+math.sqrt(1.+theta**2))
+            if theta <0.: t = -t
+          c = 1./math.sqrt(1+t**2)
+          s = t*c
+          tau = s/(1.+c)
+          h = t*a[ip,iq]
+          z[ip] -= h
+          z[iq] += h
+          d[ip] -= h
+          d[iq] += h
+          a[ip,iq] = 0.
+          for j in range(ip-1):
+            g = a[j,ip]
+            h = a[j,iq]
+            a[j,ip] = g-s*(h+g*tau)
+            a[j,iq] = h+s*(g-h*tau)
+          for j in range(ip,iq-1):
+            g = a[ip,j]
+            h = a[j,iq]
+            a[ip,j] = g-s*(h+g*tau)
+            a[j,iq] = h+s*(g-h*tau)
+          for j in range(iq,n):
+            g = a[ip,j]
+            h = a[iq,j]
+            a[ip,j] = g-s*(h+g*tau)
+            a[iq,j] = h+s*(g-h*tau)
+          for j in range(n):
+            g = v[j,ip]
+            h = v[j,iq]
+            v[j,ip] = g-s*(h+g*tau)
+            v[j,iq] = h+s*(g-h*tau)
+          nrot += 1
     for ip in range(n):
-    	b[ip] += z[ip]
-   	 	d[ip] = b[ip]
-   	 	z[ip] = 0.
-    
-  	print 'too many iterations in jacobi'
-  	break
+      b[ip] += z[ip]
+      d[ip] = b[ip]
+      z[ip] = 0.
 
- 	return a,d,v 									               # CHECK RETURN VALUE
+  print 'too many iterations in jacobi'
+  return a,d,v 									               # CHECK RETURN VALUE
 
 #---------------------------------------------------------------------------------
 
 #	returned: ave,adev,sdev,var,skew,curt (moments of data1)
 
 def moment(data1,n,ave,adev,sdev,var,skew,curt):
-	if(n <= 1):
-   	print 'n must be at least 2 in moment'
-   	break
- 	s = 0.
- 	for j in range(n):
-   	s += data1[j]
-	  	
- 	ave  = s/n
- 	adev = 0.
- 	var  = 0.
- 	skew = 0.
- 	curt = 0.
- 	eps  = 0.
- 	for j in range(n):
-   	s     = data1[j]-ave
-  	ep   += s
+  if(n <= 1):
+    print 'n must be at least 2 in moment'
+  s = 0.
+  for j in range(n):
+    s += data1[j]
+
+  ave  = s/n
+  adev = 0.
+  var  = 0.
+  skew = 0.
+  curt = 0.
+  eps  = 0.
+  for j in range(n):
+    s     = data1[j]-ave
+    ep   += s
     adev += abs(s)
- 	  p     = s*s
- 	  var  += p
+    p     = s*s
+    var  += p
     p    *= s
     skew += p
     p    *= s
     curt += p
-  	
+
   adev /= n
   var  = (var-ep**2/n)/(n-1)
-   sdev = math.sqrt(var)
+  sdev = math.sqrt(var)
   if(var != 0.):
-   	skew /= (n*sdev**3)
-   	curt /= (n*var**2)-3.
+    skew /= (n*sdev**3)
+    curt /= (n*var**2)-3.
   else:
-   	print 'no skew or kurtosis when zero variance in moment'
-   	break
- 	
- 	return ave,adev,sdev,var,skew,curt
+    print 'no skew or kurtosis when zero variance in moment'
+
+  return ave,adev,sdev,var,skew,curt
 
 #---------------------------------------------------------------------------------
 
 #	returned: gammp
 
 def gammp(a,x):
-  	
- 	if x < 0. or a <= 0.:
-   	print 'bad arguments in gammp'
-   	break
- 	
- 	if x < a+1.:
-   	gammp = gser(gamser,a,x,gln)
- 	else:
+  if x < 0. or a <= 0.:
+    print 'bad arguments in gammp'
+  if x < a+1.:
+    gammp = gser(gamser,a,x,gln)
+  else:
     gammp = 1.- gcf(gammcf,a,x,gln)
-  	
- 	return gammp
+  return gammp
 
 #---------------------------------------------------------------------------------
 
 #	returned: gammcf
 
 def gcf(gammcf,a,x,gln):
- 	ITMAX = 100
- 	EPS   = 3.e-7
- 	FPMIN = 1.e-30
- 	gln   = gammln(a)
- 	b     = x+1.-a
- 	c 	  = 1./FPMIN
- 	d     = 1./b
- 	h 	  = d
- 	for i in range(ITMAX):
-   	an = -i*(i-a)
-   	b += 2.
-   	d  = an*d+b
-   	if abs(d) < FPMIN : d = FPMIN
-   	c  = b+an/c
-   	if abs(c) < FPMIN : c = FPMIN
-   	d  = 1./d
-   	de = d*c
-   	h *= de
-   	if abs(de-1.) < EPS :
-   		print 'a too large, ITMAX too small in gcf'
-   		break
-  
+  ITMAX = 100
+  EPS   = 3.e-7
+  FPMIN = 1.e-30
+  gln   = gammln(a)
+  b     = x+1.-a
+  c 	  = 1./FPMIN
+  d     = 1./b
+  h 	  = d
+  for i in range(ITMAX):
+    an = -i*(i-a)
+    b += 2.
+    d  = an*d+b
+    if abs(d) < FPMIN : d = FPMIN
+    c  = b+an/c
+    if abs(c) < FPMIN : c = FPMIN
+    d  = 1./d
+    de = d*c
+    h *= de
+    if abs(de-1.) < EPS :
+      print 'a too large, ITMAX too small in gcf'
+      break
   gammcf = math.exp(-x+a*math.log(x)-gln)*h
-  
   return gammcf
 
 #---------------------------------------------------------------------------------
@@ -571,204 +546,179 @@ def gcf(gammcf,a,x,gln):
 #	returned: gamser
 
 def gser(gamser,a,x,gln):
- 	ITMAX = 100
- 	EPS   = 3.e-7
- 	gln   = gammln(a)
- 	if x <= 0. :
-   	if(x < 0.): 
-     		print 'x < 0 in gser'
-     		break
-    	
-   	gamser=0.
-   	return gamser
-  	
- 	ap  = a
- 	sum = 1./a
- 	de  = sum
- 	for n in range(ITMAX):
-   	ap += 1.
-   	de *= x/ap
-   	sum += de
-   	if abs(de) < abs(sum)*EPS :
- 			print 'a too large, ITMAX too small in gser'
- 			break
-  
- 	gamser = sum*exp(-x+a*math.log(x)-gln)
-  
- 	return gamser
+  ITMAX = 100
+  EPS   = 3.e-7
+  gln   = gammln(a)
+  if x <= 0. :
+    if(x < 0.): 
+      print 'x < 0 in gser'
+    gamser=0.
+    return gamser
+  ap  = a
+  sum = 1./a
+  de  = sum
+  for n in range(ITMAX):
+    ap += 1.
+    de *= x/ap
+    sum += de
+    if abs(de) < abs(sum)*EPS :
+      print 'a too large, ITMAX too small in gser'
+      break
+
+  gamser = sum*exp(-x+a*math.log(x)-gln)
+  return gamser
 
 #---------------------------------------------------------------------------------      
 
 #	returned: gammln
 
 def gammln(xx):
-	cof = np.array([76.18009172947146e0,-86.50532032941677e0,24.01409824083091e0,\
-		-1.231739572450155e0,.1208650973866179e-2,-.5395239384953e-5])
-	stp = np.array([76.18009172947146e0,-86.50532032941677e0,24.01409824083091e0,\
-		-1.231739572450155e0,.1208650973866179e-2,-.5395239384953e-5,2.5066282746310005e0])
- 	x   = xx
- 	y   = x
- 	tmp = x+5.5e0
- 	tmp = (x+0.5e0)*math.log(tmp)-tmp
- 	ser=1.000000000190015e0
- 	for j in range(6):
-   	y += 1.e0
-   	ser += cof[j]/y
-  	
- 	gammln = tmp+np.log(stp*ser/x)
-  
- 	return gammln
+  cof = np.array([76.18009172947146e0,-86.50532032941677e0,24.01409824083091e0,\
+    -1.231739572450155e0,.1208650973866179e-2,-.5395239384953e-5])
+  stp = np.array([76.18009172947146e0,-86.50532032941677e0,24.01409824083091e0,\
+    -1.231739572450155e0,.1208650973866179e-2,-.5395239384953e-5,2.5066282746310005e0])
+  x   = xx
+  y   = x
+  tmp = x+5.5e0
+  tmp = (x+0.5e0)*math.log(tmp)-tmp
+  ser=1.000000000190015e0
+  for j in range(6):
+    y += 1.e0
+    ser += cof[j]/y
+  gammln = tmp+np.log(stp*ser/x)
+  return gammln
 
 #---------------------------------------------------------------------------------      
 
 #	returned: rtbis
 
 def rtbis(func,x1,x2,xacc):
-	JMAX = 500
- 	fmid = func(x2)
- 	f    = func(x1)
- 	if f*fmid >= 0.e0 :
- 		print 'root must be bracketed in rtbis'
-   	break
-  	
- 	if f < 0.e0 :
-   	rtbis = x1
-   	dx 	  = x2-x1
- 	else:
-   	rtbis = x2
-   	dx    = x1-x2
-  	
- 	for j in range(JMAX):
-   	dx  *= 0.5e0
-   	xmid = rtbis+dx
-   	fmid = func(xmid)
-   	if fmid <= 0.e0 : rtbis = xmid
-   	if abs(dx) < xacc or fmid == 0.e0 : return rtbis
-  	
- 	print 'too many bisections in rtbis'
- 	break
+  JMAX = 500
+  fmid = func(x2)
+  f    = func(x1)
+  if f*fmid >= 0.e0 :
+    print 'root must be bracketed in rtbis'
+  if f < 0.e0 :
+    rtbis = x1
+    dx 	  = x2-x1
+  else:
+    rtbis = x2
+    dx    = x1-x2
+  for j in range(JMAX):
+    dx  *= 0.5e0
+    xmid = rtbis+dx
+    fmid = func(xmid)
+    if fmid <= 0.e0 : rtbis = xmid
+    if abs(dx) < xacc or fmid == 0.e0 : return rtbis
+  print 'too many bisections in rtbis'
 
 #---------------------------------------------------------------------------------      
 
 #	returned: 
 
 def zbrac(func,x1,x2,succes):
- 	FACTOR = 1.6e0
- 	NTRY   = 1000
- 	if x1 == x2:
-   	print 'you have to guess an initial range in zbrac'
-   	break
-  	
- 	f1 = func(x1)
- 	f2 = func(x2)
- 	succes = True
- 	for j in range(NTRY):
-   	if f1*f2 < 0.e0 : return f1,f2
-   	if abs(f1) < abs(f2) :
-   		x1 += FACTOR*(x1-x2)
- 	  	f1  = func(x1)
-   	else:
-   		x2 += FACTOR*(x2-x1)
-   		f2  = func(x2)
-  	
- 	succes = False
- 	return f1,f2      									# CHECK RETURN VALUE
+  FACTOR = 1.6e0
+  NTRY   = 1000
+  if x1 == x2:
+    print 'you have to guess an initial range in zbrac'
+  f1 = func(x1)
+  f2 = func(x2)
+  succes = True
+  for j in range(NTRY):
+    if f1*f2 < 0.e0 : return f1,f2
+    if abs(f1) < abs(f2) :
+      x1 += FACTOR*(x1-x2)
+      f1  = func(x1)
+    else:
+      x2 += FACTOR*(x2-x1)
+      f2  = func(x2)
+  succes = False
+  return f1,f2      									# CHECK RETURN VALUE
 
 #---------------------------------------------------------------------------------      
 
 #	returned: 
 
 def zbrak(fx,x1,x2,n,xb1,xb2,nb):
- 	nbb = 0
- 	x   = x1
- 	dx  = (x2-x1)/n
- 	fp  = fx(x)
- 	for i in range(n):
-   	x += dx
-   	fc = fx(x)
-   	if fc*fp < 0.e0 :
-   		nbb 	+= 1
-   		xb1[nbb] = x-dx
-   		xb2[nbb] = x
-   		if nbb == nb : break
-    	
-   	fp=fc
- 	
- 	nb=nbb
- 	return xb1,xb2,nb 			     					# CHECK RETURN VALUE
+  nbb = 0
+  x   = x1
+  dx  = (x2-x1)/n
+  fp  = fx(x)
+  for i in range(n):
+    x += dx
+    fc = fx(x)
+    if fc*fp < 0.e0 :
+      nbb 	+= 1
+      xb1[nbb] = x-dx
+      xb2[nbb] = x
+      if nbb == nb : break
+    fp=fc
+  nb=nbb
+  return xb1,xb2,nb 			     					# CHECK RETURN VALUE
 
 #---------------------------------------------------------------------------------      
 
 #	returned: zbrent
 
 def zbrent(func,x1,x2,tol):
-	ITMAX = 100
- 	EPS   = 3.e-8
- 	a  = x1
- 	b  = x2
- 	fa = func(a)
- 	fb = func(b)
- 	if (fa >0. and fb > 0.) or (fa < 0. and fb < 0.) :
-   	print 'root must be bracketed for zbrent'
-  	
- 	c  = b
- 	fc = fb
- 	for ite in range(ITMAX):
-   	if (fb > 0 and fc > 0.) or (fb < 0. and fc < 0.) :
-   		c  = a
-   		fc = fa
-   		d  = b-a
-   		e  = d
-    	
-   	if abs(fc) < abs(fb) :
-   		a  = b
-   		b  = c
-   		c  = a
-   		fa = fb
-   		fb = fc
-   		fc = fa
-    	
-   	tol1 = 2.*EPS*abs(b)+0.5*tol
-   	xm   = .5*(c-b)
-   	if abs(xm) <= tol1  or fb == 0. :
-   		zbrent = b
-   		return zbrent
-   	if abs(e) >= tol1  and abs(fa) > abs(fb) :
-   		s = fb/fa
-   		if a == c :
-     		p = 2.*xm*s
-     		q = 1.-s
-   		else:
+  ITMAX = 100
+  EPS   = 3.e-8
+  a  = x1
+  b  = x2
+  fa = func(a)
+  fb = func(b)
+  if (fa >0. and fb > 0.) or (fa < 0. and fb < 0.) :
+    print 'root must be bracketed for zbrent'
+  c  = b
+  fc = fb
+  for ite in range(ITMAX):
+    if (fb > 0 and fc > 0.) or (fb < 0. and fc < 0.) :
+      c  = a
+      fc = fa
+      d  = b-a
+      e  = d
+    if abs(fc) < abs(fb) :
+      a  = b
+      b  = c
+      c  = a
+      fa = fb
+      fb = fc
+      fc = fa
+    tol1 = 2.*EPS*abs(b)+0.5*tol
+    xm   = .5*(c-b)
+    if abs(xm) <= tol1  or fb == 0. :
+      zbrent = b
+      return zbrent
+    if abs(e) >= tol1  and abs(fa) > abs(fb) :
+      s = fb/fa
+      if a == c :
+        p = 2.*xm*s
+        q = 1.-s
+      else:
         q = fa/fc
-     		r = fb/fc
-     		p = s*(2.*xm*q*(q-r)-(b-a)*(r-1.))
-     		q = (q-1.)*(r-1.)*(s-1.)
-      		
-     	if p > 0. : q += -1.
+        r = fb/fc
+        p = s*(2.*xm*q*(q-r)-(b-a)*(r-1.))
+        q = (q-1.)*(r-1.)*(s-1.)
+      if p > 0. : q += -1.
       p = abs(p)
       if(2.*p < min(3.*xm*q-abs(tol1*q),abs(e*q))):
-      	e = d
-      	d = p/q
+        e = d
+        d = p/q
       else:
-      	d = xm
-      	e = d
-    	
+        d = xm
+        e = d
     else:
-    	d = xm
-    	e = d
-    	
-  	a  = b
+      d = xm
+      e = d
+    a  = b
     fa = fb
     if abs(d) > tol1 :
-    	b += d
+      b += d
     else:
-    	b += math.copysign(tol1,xm)
-    	
+      b += math.copysign(tol1,xm)
     fb = func(b)
-  
   print 'zbrent exceeding maximum iterations'
   zbrent = b
-  
   return zbrent
       
 #---------------------------------------------------------------------------------      
@@ -778,99 +728,84 @@ def zbrent(func,x1,x2,tol):
 def sort(n,arr):
   NSTACK = 50
   istack = np.empty([NSTACK])
- 	jstack = 0
- 	M  = 7
- 	l  = 1
- 	ir = n
- 	while ir-l < M:
-   	for j in range(l,ir):
-     	a = arr[j]
-     	for i in range(j,l,-1):
+  jstack = 0
+  M  = 7
+  l  = 1
+  ir = n
+  while ir-l < M:
+    for j in range(l,ir):
+      a = arr[j]
+      for i in range(j,l,-1):
         if arr[i] < a :
-   	      arr[i+1] = a
-       	  break
-       	arr[i+1] = arr[i]
-     	
+          arr[i+1] = a
+          break
+        arr[i+1] = arr[i]
       i = l-1                       # POTENTIAL SOURCE OF BUG
-     	arr(i+1)=a
-   	
+      arr[i+1]=a
     if jstack == 0 : return arr
-   	ir = istack[jstack]
-   	l  = istack[jstack-1]
-   	jstack -= 2
- 	else:
-   	k = (l+ir)/2.
+    ir = istack[jstack]
+    l  = istack[jstack-1]
+    jstack -= 2
+  else:
+    k = (l+ir)/2.
     temp     = arr[k]
     arr[k]   = arr[l+1]
-   	arr[l+1] = temp
-   	if arr[l] > arr[ir] :
-     	temp    = arr[l]
-     	arr[l]  = arr[ir]
-     	arr[ir] = temp
-   	
+    arr[l+1] = temp
+    if arr[l] > arr[ir] :
+      temp    = arr[l]
+      arr[l]  = arr[ir]
+      arr[ir] = temp
     if arr[l+1] > arr[ir] :
-     	temp     = arr[l+1]
-     	arr[l+1] = arr[ir]
-     	arr[ir]  = temp
-   	
+      temp     = arr[l+1]
+      arr[l+1] = arr[ir]
+      arr[ir]  = temp
     if arr[l] > arr[l+1] :
-     	temp     = arr[l]
-     	arr[l]   = arr[l+1]
-     	arr[l+1] = temp
-   	
+      temp     = arr[l]
+      arr[l]   = arr[l+1]
+      arr[l+1] = temp
     i = l+1
-   	j = ir
-   	a = arr[l+1]
-   	while arr[i] < a and j > i:       #
-     	i = i+1                         #
-     	while (arr[j] > a):             #
+    j = ir
+    a = arr[l+1]
+    while arr[i] < a and j > i:
+      i = i+1
+      while (arr[j] > a):             #
         j = j-1                       #     POTENTIAL SOURCE OF BUGS
-   	    temp   = arr[i]               #     (ll. 904-912 fortran)
+        temp   = arr[i]               #     (ll. 904-912 fortran)
         arr[i] = arr[j]               #
-       	arr[j] = temp                 #
-   	arr[l+1] = arr[j]                 #
-   	arr[j] = a
-   	jstack += 2
-   	if jstack > NSTACK :
-   		print 'NSTACK too small in sort'
-   		break
-   	
+        arr[j] = temp                 #
+    arr[l+1] = arr[j]                 #
+    arr[j] = a
+    jstack += 2
+    if jstack > NSTACK :
+      print 'NSTACK too small in sort'
     if ir-i+1 >= j-l :
-   		istack[jstack]   = ir
-   		istack[jstack-1] = i
-   		ir = j-1
-   	else:
-   		istack[jstack]   = j-1
-   		istack[jstack-1] = l
-   		l = i
+      istack[jstack]   = ir
+      istack[jstack-1] = i
+      ir = j-1
+    else:
+      istack[jstack]   = j-1
+      istack[jstack-1] = l
+      l = i
 
 #---------------------------------------------------------------------------------
 
 #	returned: ra,rb,rc
 
 def sort3(n,ra,rb,rc,wksp,iwksp):
-	ra    = indexx(n,ra,iwksp)[0]
-	iwksp = indexx(n,ra,iwksp)[1]
-	
-	for j in range(n)
-        wksp[j] = ra[j]
-	
-	for j in range(n)
-        ra[j]   = wksp[iwksp[j]]
-	
-	for j in range(n)
-        wksp[j] = rb[j]
-	
-	for j in range(n)
-        rb(j)   = wksp[iwksp[j]]
-	
-	for j in range(n)
-        wksp[j] = rc[j]
-	
-	for j in range(n)
-        rc[j]   = wksp[iwksp[j]]
-
-	return ra,rb,rc 				  					# CHECK RETURN VALUE
+  ra,iwksp = indexx(n,ra,iwksp)
+  for j in range(n):
+    wksp[j] = ra[j]
+  for j in range(n):
+    ra[j]   = wksp[iwksp[j]]
+  for j in range(n):
+    wksp[j] = rb[j]
+  for j in range(n):
+    rb[j]   = wksp[iwksp[j]]
+  for j in range(n):
+    wksp[j] = rc[j]
+  for j in range(n):
+    rc[j]   = wksp[iwksp[j]]
+  return ra,rb,rc               				  					# CHECK RETURN VALUE
 
 #---------------------------------------------------------------------------------
 
@@ -895,11 +830,11 @@ def indexx(n,arr,indx):
             while (arr[indx[i]] <= a) is False:           # POTENTIAL SOURCE OF BUGS
               indx[i+1]=indx[i]                           # (ll. 978-983 fortran)
           i=0                                             #
-          indx(i+1)=indxt                                 #
-        if(jstack == 0): return arr,indexx  # CHECK RETURN VALUE
-        ir=istack[jstack]
-        l=istack[jstack-1]
-        jstack-=2
+          indx[i+1]=indxt                                 #
+        if jstack == 0 : return arr,indexx
+        ir = istack[jstack]
+        l  = istack[jstack-1]
+        jstack -= 2
       else:
         k=(l+ir)/2.
         itemp=indx[k]
@@ -929,9 +864,8 @@ def indexx(n,arr,indx):
           itemp=indx[i]                             #
           indx[i]=indx[j]                           #
           indx[j]=itemp                             #
-          goto 3                                    #
         indx[l]=indx[j]                             #
-        indx(j)=indxt
+        indx[j]=indxt
         jstack+=2
         if(jstack > NSTACK):
           print 'NSTACK too small in indexx'
@@ -967,21 +901,19 @@ def qtrap(func,a,b,s):
 #	returned: s
 
 def trapzd(func,a,b,s,n):
- 	if n == 1:
-   	s = 0.5*(b-a)*(func(a)+func(b))
- 	else:
-   	it  = 2**(n-2)
+  if n == 1:
+    s = 0.5*(b-a)*(func(a)+func(b))
+  else:
+    it  = 2**(n-2)
     tnm = it
-   	de  = (b-a)/tnm
+    de  = (b-a)/tnm
     x   = a+0.5*de
-   	sum  = 0.
-   	for j in range(it):
-     		sum += func(x)
-         	x += de
-    	
-   	s = 0.5*(s+(b-a)*sum/tnm)
-  
- 	return s
+    sum  = 0.
+    for j in range(it):
+      sum += func(x)
+      x += de
+    s = 0.5*(s+(b-a)*sum/tnm)
+  return s
 
 #---------------------------------------------------------------------------------
 
@@ -1009,195 +941,172 @@ def erf(x):
 #	returned: a, b
 
 def gaussj(a,n,np,b,m,mp):
- 	NMAX=50
- 	indxc = np.empty([NMAX])
-	indxr = np.empty([NMAX])
- 	ipiv  = np.empty([NMAX])
- 	for j in range(n):
-   	ipiv[j] = 0
-  	
- 	for i in range(n):
-   	big = 0.
-   	for j in range(n):
-     		if ipiv[j] != 1 :
-     			for k in range(n):
-       			if ipiv[k] == 0 :
-       				if abs(a[j,k]) >= big :
-           				big  = abs(a[j,k])
-           				irow = j
-           				icol = k
-  		
- 		ipiv[icol] += 1
+  NMAX=50
+  indxc = np.empty([NMAX])
+  indxr = np.empty([NMAX])
+  ipiv  = np.empty([NMAX])
+  for j in range(n):
+    ipiv[j] = 0
+  for i in range(n):
+    big = 0.
+    for j in range(n):
+      if ipiv[j] != 1 :
+        for k in range(n):
+          if ipiv[k] == 0 :
+            if abs(a[j,k]) >= big :
+              big  = abs(a[j,k])
+              irow = j
+              icol = k
+    ipiv[icol] += 1
 
-#     We now have the pivot element, so we interchange rows, if needed, 
-#     to put the pivot element on the diagonal. The columns are not 
-#     physically interchanged, only relabeled:
-#     indxc(i), the column of the ith pivot element, is the ith column 
-#     that is reduced, while indxr(i) is the row in which that pivot 
-#     element was originally located. If indxr(i) =indxc(i) there is an 
-#     implied column interchange. With this form of bookkeeping, the
-#     solution b's will end up in the correct order, and the inverse 
-#     matrix will be scrambled by columns.
+    #     We now have the pivot element, so we interchange rows, if needed, 
+    #     to put the pivot element on the diagonal. The columns are not 
+    #     physically interchanged, only relabeled:
+    #     indxc(i), the column of the ith pivot element, is the ith column 
+    #     that is reduced, while indxr(i) is the row in which that pivot 
+    #     element was originally located. If indxr(i) =indxc(i) there is an 
+    #     implied column interchange. With this form of bookkeeping, the
+    #     solution b's will end up in the correct order, and the inverse 
+    #     matrix will be scrambled by columns.
 
- 		if irow != icol :
-   		for l in range(n):
-     			dum = a[irow,l]
-     			a[irow,l] = a[icol,l]
-     			a[icol,l] = dum
-    
-   		for lin range(m):
-     			dum = b[irow,l]
-     			b[irow,l] = b[icol,l]
-     			b[icol,l] = dum
-  
- 		indxr[i]=irow
- 		indxc[i]=icol
- 		if a[icol,icol] == 0. :
-   		print 'singular matrix in gaussj'
-   		break
-  
- 		pivinv = 1./a[icol,icol]
- 		a[icol,icol]=1.
- 		for l in range(n):
-   		a[icol,l] *= pivinv
-  		
- 		for l in range(m):
-   		b[icol,l] *= pivinv
-  
- 		for ll in range(n):           # Next, we reduce the rows...
-   		if ll != icol :               #...except for the pivot one, of course.
-     			dum = a[ll,icol]
-     			a[ll,icol] = 0.
-     			for l in range(n):
-       			a[ll,l] -= a[icol,l]*dum 
-     			
-     			for l in range(m):
-       			b(ll,l) -= b(icol,l)*dum  
-  
- 	for l in range(n,0,-1):
-   	if indxr[l] != indxc[l] :
-     		for k in range(1,n):
-       		dum = a[k,indxr[l]]
-       		a[k,indxr[l]] = a[k,indxc[l]]
-       		a[k,indxc[l]] = dum
-  
- 	return a,b                          # And we are done.
+    if irow != icol :
+      for l in range(n):
+        dum = a[irow,l]
+        a[irow,l] = a[icol,l]
+        a[icol,l] = dum
+      for l in range(m):
+        dum = b[irow,l]
+        b[irow,l] = b[icol,l]
+        b[icol,l] = dum
+
+    indxr[i]=irow
+    indxc[i]=icol
+    if a[icol,icol] == 0. :
+      print 'singular matrix in gaussj'
+      break
+    pivinv = 1./a[icol,icol]
+    a[icol,icol]=1.
+    for l in range(n):
+      a[icol,l] *= pivinv
+    for l in range(m):
+      b[icol,l] *= pivinv
+    for ll in range(n):           # Next, we reduce the rows...
+      if ll != icol :               #...except for the pivot one, of course.
+        dum = a[ll,icol]
+        a[ll,icol] = 0.
+        for l in range(n):
+          a[ll,l] -= a[icol,l]*dum 
+        for l in range(m):
+          b[ll,l] -= b[icol,l]*dum  
+  for l in range(n,0,-1):
+    if indxr[l] != indxc[l] :
+      for k in range(1,n):
+        dum = a[k,indxr[l]]
+        a[k,indxr[l]] = a[k,indxc[l]]
+        a[k,indxc[l]] = dum
+  return a,b                          # And we are done.
 
 #---------------------------------------------------------------------------------
 
 #	returned: xi
 
 def rebin(rc,nd,r,xin,xi):
- 	k  = 0
- 	xo = 0.
- 	dr = 0.
- 	for i in range(nd-1):
-   	while (rc > dr):
-     		k += 1
-      	dr += r[k]
-    	
-   	if k > 1 : xo = xi[k-1]
-   	xn  = xi[k]
-   	dr -= rc
-   	xin[i] = xn-(xn-xo)*dr/r[k]
-  	
- 	for i in range(nd-1):
-   	xi[i] = xin[i]
-  	
- 	xi[nd]=1.
-  
- 	return xi
+  k  = 0
+  xo = 0.
+  dr = 0.
+  for i in range(nd-1):
+    while (rc > dr):
+      k += 1
+      dr += r[k]
+    if k > 1 : xo = xi[k-1]
+    xn  = xi[k]
+    dr -= rc
+    xin[i] = xn-(xn-xo)*dr/r[k]
+  for i in range(nd-1):
+    xi[i] = xin[i]
+  xi[nd]=1.
+  return xi
 
 #---------------------------------------------------------------------------------
 
 #	returned: factorial of n
 
 def fact(n):
-	if n <= 0 :
-   	fact = 1
-   	print  'n <=0 and fact = 1'
-   	return fact
- 	else:
-   	fact = 1         
-  	
- 	for i in range(1,n+1):
-   	fact *= i
-    
-   return fact
+  if n <= 0 :
+    fact = 1
+    print  'n <=0 and fact = 1'
+    return fact
+  else:
+    fact = 1         
+  for i in range(1,n+1):
+    fact *= i
+  return fact
 
 #---------------------------------------------------------------------------------
 
 #	returned: prob
 
 def ksone(data,n,func,d,prob):
- 	data = sort(n,data)
- 	en = n
- 	d  = 0.
- 	fo = 0.
- 	for j in range(n):
-   	fn = j/en
-   	ff = func(data[j])
-   	dt = max(abs(fo-ff),abs(fn-ff))
-   	if dt > d : d = dt
-   	fo = fn
-  	
- 	en = math.sqrt(en)
- 	prob = probks((en+0.12+0.11/en)*d)  
-   
- 	return  prob
+  data = sort(n,data)
+  en = n
+  d  = 0.
+  fo = 0.
+  for j in range(n):
+    fn = j/en
+    ff = func(data[j])
+    dt = max(abs(fo-ff),abs(fn-ff))
+    if dt > d : d = dt
+    fo = fn
+  en = math.sqrt(en)
+  prob = probks((en+0.12+0.11/en)*d)
+  return  prob
 
 #---------------------------------------------------------------------------------
 
 #	returned: prob
 
 def kstwo(data1,n1,data2,n2,d,prob):
- 	data1 = sort(n1,data1)
- 	data2 = sort(n2,data2)
- 	en1 = n1
- 	en2 = n2
- 	j1  = 0
- 	j2  = 0
- 	fn1 = 0.
- 	fn2 = 0.
- 	d = 0.
- 	while j1 <= n1 and j2 <= n2 :
-   	d1 = data1[j1]
-   	d2 = data2[j2]
-   	if d1 <= d2 :
-   	  	fn1 = j1/en1
-     		j1 += 1  
-   	
-   	if d2 <= d1 :
-     		fn2 = j2/en2
-     		j2 += 1  
-    	
-   	dt = abs(fn2-fn1)  
-   	if dt > d : d = dt    
- 	
- 	en = math.sqrt(en1*en2/(en1+en2))
- 	prob = probks((en+0.12+0.11/en)*d)
-  	
- 	return  prob
+  data1 = sort(n1,data1)
+  data2 = sort(n2,data2)
+  en1 = n1
+  en2 = n2
+  j1  = 0
+  j2  = 0
+  fn1 = 0.
+  fn2 = 0.
+  d = 0.
+  while j1 <= n1 and j2 <= n2 :
+    d1 = data1[j1]
+    d2 = data2[j2]
+    if d1 <= d2 :
+      fn1 = j1/en1
+      j1 += 1  
+    if d2 <= d1 :
+      fn2 = j2/en2
+      j2 += 1  
+    dt = abs(fn2-fn1)
+    if dt > d : d = dt    
+  en = math.sqrt(en1*en2/(en1+en2))
+  prob = probks((en+0.12+0.11/en)*d)
+  return  prob
 
 #---------------------------------------------------------------------------------
 
 #	returned: probks
 
 def probks(alam):
-	EPS1 = 0.001
- 	EPS2 = 1.e-8
- 	a2   = -2.*alam**2
- 	fac  = 2.
- 	probks = 0.
- 	termbf = 0.
- 	for j in range(1,100):
-   	term = fac*math.exp(a2*j**2)
-   	probks += term
-   	if abs(term) <= EPS1*termbf or abs(term) <= EPS2*probks : return probks
-   	fac *= -1
-   	termbf = abs(term)  
-  	
- 	probks=1.
-  
- 	return probks
+  EPS1 = 0.001
+  EPS2 = 1.e-8
+  a2   = -2.*alam**2
+  fac  = 2.
+  probks = 0.
+  termbf = 0.
+  for j in range(1,100):
+    term = fac*math.exp(a2*j**2)
+    probks += term
+    if abs(term) <= EPS1*termbf or abs(term) <= EPS2*probks : return probks
+    fac *= -1
+    termbf = abs(term)  
+  probks=1.
+  return probks
       
