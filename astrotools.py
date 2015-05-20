@@ -78,7 +78,7 @@ def dlike(gal):
 		radius = math.sqrt(pow(x[i],2))
         s = get_sigmalos(radius,gal,rcut,p0)
         arg1 += 0.5e0*pow(v[i]-u,2)/(pow(dv[i],2)+pow(s,2))
-        p2   += 0.5e0*math.log(2*math.pi*(pow(dv[i],2)+pow(s,2)))		# added 2*pi
+        p2   += 0.5e0*math.log(2*math.pi*(pow(dv[i],2)+pow(s,2)))
 	q = -arg1-p2 + like_val
 	dlike = math.exp(q)
 	return dlike,p0
@@ -157,7 +157,7 @@ def get_sigmalos(R,gal,rcut,p0):
 	#ss = dblquad(func,a,np.inf,lambda x:R+pow(x,2),lambda x:np.inf,args=(R,gal,rcut,p0))
 	ss = dblquad(func,a,b,lambda x:R+pow(x,2),lambda x:rt,args=(R,gal,rcut,p0))
 	#ss = 4.e0*G*quadrature(funcr,a,b,args=(rs,rt,beta,R,pa,rcut))[0]
-	s  = math.sqrt(ss/istar(R,rs))						# projected 2-D velocity dispersion
+	s  = math.sqrt(ss[0]/istar(R,rs))						# projected 2-D velocity dispersion
 	return s 							# NO NEED TO ROOT IF I THEN SQUARE IT IN DLIKE !!!!!
     
 ##########################################################################################################
@@ -199,17 +199,17 @@ def istar(R,rs):
 	return istar
 
 ##########################################################################################################
-#	M(r)
+#	evaluation of M(r)
 
 def get_M(x,pa,rcut):
-	return quad(dmass,0.e0,x,args=(pa,rcut))[0]
+	return romberg(dmass,0.e0,x,args=(pa,rcut))
 
 ##########################################################################################################
 #	integrand of M(r): 4pi*r^2*rho_DM(r)
 
 def dmass(x,pa,rcut):
-	r0 = pow(10.e0,pa[1])	# r0 of NFW coincides with rt
-	a,b,c = pa[5]			# a,b,c in NFW
+	r0 = pow(10.e0,pa[1])	# r0 of NFW coincides with rs, the half-light radius
+	a,b,c = pa[-3:]			# a,b,c shape parameters of NFW profile
 	return 4.e0*math.pi*math.exp(-x/rcut)*pow(r0,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/r0,b),(c-a)/b)
 
 ##########################################################################################################
