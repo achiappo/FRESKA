@@ -210,7 +210,7 @@ def get_M(x,pa,rcut):
 def dmass(x,pa,rcut):
 	r0 = pow(10.e0,pa[1])	# r0 of NFW coincides with rs, the half-light radius
 	a,b,c = pa[-3:]			# a,b,c shape parameters of NFW profile
-	return 4.e0*math.pi*math.exp(-x/rcut)*pow(r0,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/r0,b),(c-a)/b)
+	return 4.e0*math.pi*pow(r0,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/r0,b),(c-a)/b)
 
 ##########################################################################################################
 #	returned: ave,adev,sdev,var,skew,curt (moments of data)
