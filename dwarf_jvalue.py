@@ -1,5 +1,5 @@
 import sys
-from AT import get_data,dlike
+from astrotools import get_data,dlike
 from numpy.random import random_sample
 
 # various parameters definitions
