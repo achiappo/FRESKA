@@ -36,8 +36,8 @@ def get_data(gal):
 	pmin = np.empty([0])
 	pmax = np.empty([0])
 	for i in range(5,len(data)):						
-		pmin = np.append(pmin,float(parameters[i][0]))	# extract min,max values of M300pc [Msun],log10(rs[kpc]),
-		pmax = np.append(pmax,float(parameters[i][1]))	# beta (velocity anisotropy), a,b,c NFW shape parameters
+		pmin = np.append(pmin,float(parameters[i][0]))	# extract min,max values of M300pc[Msun],log10(rs[kpc])
+		pmax = np.append(pmax,float(parameters[i][1]))	# beta(velocity anisotropy) a,b,c NFW shape parameters
 	
 	velocities = open('data/velocities/velocities_'+gal+'.dat','r').readlines()
 	x  = np.empty([0])
@@ -68,7 +68,7 @@ def get_data(gal):
 
 def dlike(gal):
 	x,v,dv,rs,rt,nstars,D,like_val,pa = get_data(gal)[:9]
-	Mvar,rs,beta,a1,b1,c1,u = pa
+	Mvar,rs,beta,a,b,c,u = pa
 	rs = 10.e0**rs
 	arg1  = 0.e0
 	p2 	  = 0.e0
@@ -78,7 +78,7 @@ def dlike(gal):
 		radius = math.sqrt(pow(x[i],2))
         s = get_sigmalos(radius,gal,rcut,p0)
         arg1 += 0.5e0*pow(v[i]-u,2)/(pow(dv[i],2)+pow(s,2))
-        p2   += 0.5e0*math.log(pow(dv[i],2)+pow(s,2))		# added 2*pi
+        p2   += 0.5e0*math.log(2*math.pi*(pow(dv[i],2)+pow(s,2)))		# added 2*pi
 	q = -arg1-p2 + like_val
 	dlike = math.exp(q)
 	return dlike,p0
@@ -100,8 +100,8 @@ def M(x_in,pa,rcut):
 		print 'innermost data point radius. Spline does not'
 		print 'extend to r < r_min. Stopping.'
 		print math.exp(xa[0]),math.exp(xa[nmass-1]),x_in
-	klo = 1
-	khi = nmass
+	klo = 0
+	khi = nmass-1
 	while khi-klo > 1:
 		k = (khi+klo)/2
 		if xa[k] > x :
@@ -110,8 +110,7 @@ def M(x_in,pa,rcut):
 			klo=k
 
 	h = xa[khi]-xa[klo]
-	if h == 0. :
-		print 'bad xa input in splint'
+	if h == 0. : print 'bad xa input in splint'
 	a = (xa[khi]-x)/h
 	b = (x-xa[klo])/h
 	y = a*ya[klo]+b*ya[khi]+(a**3-a)*y2a[klo]+(b**3-b)*y2a[khi]*(h**2)/6.
@@ -170,8 +169,10 @@ def int_funcs(t,rs,rt,beta,R,pa,rcut):
 	return quadrature(funcs,lambda t:R+t**2,rt,args=(rs,beta,R,pa,rcut))[0]
 # integrand of Eq. 3 Walker et al. 2009
 def funcr(r,rs,rt,beta,R,pa,rcut):
-	return (1-beta*R**2/(R+r**2)**2)*pow(R+r**2,1.-2.*beta)*int_funcs(r,rs,rt,beta,R,pa,rcut)/math.sqrt(2*R+r**2)
+	return (1-beta*R**2/(R+r**2)**2)*pow(R+r**2,1.-2.*beta)*\
+	int_funcs(r,rs,rt,beta,R,pa,rcut)/math.sqrt(2*R+r**2)
 
+# (alternative) two-dimensional function
 def func(y,x,R,gal,rcut,p0):
 #	valid only for constant beta
 	rs = get_data(gal)[3]
@@ -207,21 +208,19 @@ def get_M(x,pa,rcut):
 #	integrand of M(r): 4pi*r^2*rho_DM(r)
 
 def dmass(x,pa,rcut):
-	r0 	  = pow(10.e0,pa[1])		# r0 of NFW coincides with rt
-	a1    = pa[3]					# a in NFW
-	b1    = pa[4]					# b in NFW
-	c1    = pa[5]					# c in NFW
-	return 4.e0*math.pi*math.exp(-x/rcut)*pow(r0,a1)*pow(x,2.e0-a1)/pow(1.e0+pow(x/r0,b1),(c1-a1)/b1)
+	r0 = pow(10.e0,pa[1])	# r0 of NFW coincides with rt
+	a,b,c = pa[5]			# a,b,c in NFW
+	return 4.e0*math.pi*math.exp(-x/rcut)*pow(r0,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/r0,b),(c-a)/b)
 
 ##########################################################################################################
-#	returned: ave,adev,sdev,var,skew,curt (moments of data1)
+#	returned: ave,adev,sdev,var,skew,curt (moments of data)
 
-def moment(data1,n):
+def moment(data,n):
   if(n <= 1):
     print 'n must be at least 2 in moment'
   s = 0.
   for j in range(n):
-    s += data1[j]
+    s += data[j]
 
   ave  = s/n
   adev = 0.
@@ -231,7 +230,7 @@ def moment(data1,n):
   eps  = 0.
   ep   = 0.
   for j in range(n):
-    s     = data1[j]-ave
+    s     = data[j]-ave
     ep   += s
     adev += abs(s)
     p     = s*s
