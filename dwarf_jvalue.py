@@ -5,27 +5,18 @@ from numpy.random import random_sample
 # various parameters definitions
 nparams = 7
 nmax 	= 1000
-pi 	= 3.14159e0
-rstar	= 0.3e0
-kpctokm	= 3.0856e16
-G 	= 6.67e-11*1.e30*1.e-9  			
-# km^3 Msun^-1 s^-2
-rt_max 	= 1.e1 						# the maximum value for tidal radius
-ncalls 	= 10000						# number of mcmc accepts
-idum 	= -46812					# seed for random number generators
+ncalls 	= 10000				# number of mcmc accepts
 
-galaxy  = sys.argv[1]					# get the galaxy name from the command line
+galaxy  = sys.argv[1]								# get the galaxy name from the command line
 like_val,pa,pmin,pmax = get_data(galaxy)[7:]		# get the data for the galaxy 
-
-# Keep track of accepts and rejects
-count_accept = 0 
-count_reject = 0 
 
 # Get initial values for the likelihood function at pa
 laccept = dlike(galaxy)[0]
-xx 	= np.empty([nparams])
+xx 		= np.empty([nparams])
 
-output = open('out_'+galaxy+'.dat','w')					# output file for the list of parameters 
+output = open('out_'+galaxy+'.dat','w')				# output file for the list of parameters 
+
+# Keep track of accepts and rejects
 accept = 0
 reject = 0 
 
