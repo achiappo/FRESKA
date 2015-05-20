@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.integrate import quad,romberg,dblquad
+from scipy.integrate import quad,romberg,quadrature,dblquad,nquad
 from scipy.interpolate import UnivariateSpline
 import math
 
@@ -30,14 +30,14 @@ def get_data(gal):
 
 	dwarfname 	 	= str(parameters[0][0]) 			# name of the dwarf
 	D 				= float(parameters[1][0]) 			# distance to galaxy in kpc
-	rc  			= float(parameters[2][0]) 			# core radius
+	rs  			= float(parameters[2][0]) 			# half-light radius
 	rt  			= float(parameters[3][0]) 			# tidal radius 
 	like_val		= float(parameters[4][0])		 	# initial (arbitrary) value of the likelihood
 	pmin = np.empty([0])
 	pmax = np.empty([0])
-	for i in range(5,len(data)):
-		pmin = np.append(pmin,float(parameters[i][0]))
-		pmax = np.append(pmax,float(parameters[i][1]))
+	for i in range(5,len(data)):						
+		pmin = np.append(pmin,float(parameters[i][0]))	# extract min,max values of M300pc [Msun],log10(rs[kpc]),
+		pmax = np.append(pmax,float(parameters[i][1]))	# beta (velocity anisotropy), a,b,c NFW shape parameters
 	
 	velocities = open('data/velocities/velocities_'+gal+'.dat','r').readlines()
 	x  = np.empty([0])
@@ -62,26 +62,21 @@ def get_data(gal):
 	pmax = np.append(pmax,vsys_max)
 	pa = 0.5e0* (pmax+pmin)
 
-	return x,v,dv,rc,rt,nstars,D,like_val,pa,pmin,pmax
+	return x,v,dv,rs,rt,nstars,D,like_val,pa,pmin,pmax
 
 #########################################################################################
 
 def dlike(gal):
-	x,v,dv,rc,rt,nstars,D,like_val,pa = get_data(gal)[:9]
-	Mvar  = pa[0]			# Mvar = mass within 300 pc. 
-	rs 	  = 10.e0**pa[1]
-	beta  = pa[2]
-	a1    = pa[3]
-	b1    = pa[4]	
-	c1    = pa[5]
-	u 	  = pa[6]
+	x,v,dv,rs,rt,nstars,D,like_val,pa = get_data(gal)[:9]
+	Mvar,rs,beta,a1,b1,c1,u = pa
+	rs = 10.e0**rs
 	arg1  = 0.e0
 	p2 	  = 0.e0
 	rcut = pow(G*Mhalo*pow(D,2)/2./pow(sigma_MW,2),1/3.)
 	p0    = 10.e0**Mvar/M(rstar,pa,rcut)
 	for i in range(nstars):
 		radius = math.sqrt(pow(x[i],2))
-        s = get_sigmalos(radius,gal,rc,p0)
+        s = get_sigmalos(radius,gal,rcut,p0)
         arg1 += 0.5e0*pow(v[i]-u,2)/(pow(dv[i],2)+pow(s,2))
         p2   += 0.5e0*math.log(pow(dv[i],2)+pow(s,2))		# added 2*pi
 	q = -arg1-p2 + like_val
@@ -89,34 +84,12 @@ def dlike(gal):
 	return dlike,p0
 
 ##########################################################################################################
-#	spline the mass distribution
-
-def init_mass(pa,rcut):
-	nmass  = 25
-	rmin   = 1.e-4
-	rmax   = 1.e1
-	rmass  = np.empty([nmass])
-	massa  = np.empty([nmass])
-	mass2a = np.empty([nmass])
-	dr = math.log(rmax/rmin)/(nmass-1.e0)
-	for i in range(nmass):
-		#r = dr*(i-1.e0)+rmin
-		r = rmin*math.exp(dr*i)
-		mass = get_M(r,pa,rcut)
-		rmass[i] = math.log(r)
-        massa[i] = math.log(mass)
-
-	Mspline = UnivariateSpline(rmass,massa,s=1)
-	mass2a = Mspline(rmass)
-	return rmass,massa,mass2a
-
-##########################################################################################################
 #	get the mass, after the initial spline 
 
 def M(x_in,pa,rcut):
 	nmass = 25
 	xa,ya,y2a = init_mass(pa,rcut)
-
+	#print 'x_in = ',x_in
 	x = math.log(x_in)
 	if (x > xa[nmass-1]):
 		print 'M(r) called with r > r_tidal. Spline does not'
@@ -146,46 +119,82 @@ def M(x_in,pa,rcut):
 	return M
 
 ##########################################################################################################
+#	spline the mass distribution
+
+def init_mass(pa,rcut):
+	nmass  = 25
+	rmin   = 1.e-4
+	rmax   = 1.e1
+	rmass  = np.empty([nmass])
+	massa  = np.empty([nmass])
+	mass2a = np.empty([nmass])
+	dr = math.log(rmax/rmin)/(nmass-1.e0)
+	for i in range(nmass):
+		#r = dr*(i-1.e0)+rmin
+		r = rmin*math.exp(dr*i)
+		mass = get_M(r,pa,rcut)
+		rmass[i] = math.log(r)
+        massa[i] = math.log(mass)
+
+	Mspline = UnivariateSpline(rmass,massa,s=1)
+	mass2a = Mspline(rmass)
+	return rmass,massa,mass2a
+
+##########################################################################################################
 
 #	Get the line-of-sight velocity dispersion
 #	Note the variable substution: t^2 = r-R, where r and R are 
 # 	defined in appendix eq 2 of Strigari et al, Nature 2008. 
 # 	This makes sure that the integral doesn't numerically diverge. 
 
-def get_sigmalos(xr,gal,rcut,p0):
-	rc,rt = get_data(gal)[3:5]
-	R = xr
-	a = 0.e0 											# lower bound on outer integral
-	b = math.sqrt(rt-R)									# upper bound on outer integral 
-	ss = dblquad(func,a,b,lambda x:R*pow(x,2),lambda x:rt,args=(R,gal,rcut,p0))	# double integration
-	s  = math.sqrt(ss[0]/istar(R,rc))						# projected 2-D velocity dispersion
-	return s
+def get_sigmalos(R,gal,rcut,p0):
+	rs,rt = get_data(gal)[3:5]
+	pa  = get_data(gal)[8]
+	beta = pa[2]
+	a = 0.e0											# lower bound on outer integral
+	b = math.sqrt(rt-R)									# upper bound on outer integral
+	#lmt = {'points':np.linspace(a,b,10),'limit':100.}
+	#ss = nquad(func,[[a,b],[lambda x:R+pow(x,2),lambda x:rt]],args=(R,gal,rcut,p0),opts=[lmt])
+	#ss = dblquad(func,a,np.inf,lambda x:R+pow(x,2),lambda x:np.inf,args=(R,gal,rcut,p0))
+	ss = dblquad(func,a,b,lambda x:R+pow(x,2),lambda x:rt,args=(R,gal,rcut,p0))
+	#ss = 4.e0*G*quadrature(funcr,a,b,args=(rs,rt,beta,R,pa,rcut))[0]
+	s  = math.sqrt(ss/istar(R,rs))						# projected 2-D velocity dispersion
+	return s 							# NO NEED TO ROOT IF I THEN SQUARE IT IN DLIKE !!!!!
     
 ##########################################################################################################
+# integrand of Eq. 2 in Walker et al. 2009
+def funcs(s,rs,beta,pa,rcut):
+	return pow(s,2.*beta-2.)*rhostar(s,rs)*M(s,pa,rcut)
+# integral of above
+def int_funcs(t,rs,rt,beta,R,pa,rcut):
+	return quadrature(funcs,lambda t:R+t**2,rt,args=(rs,beta,R,pa,rcut))[0]
+# integrand of Eq. 3 Walker et al. 2009
+def funcr(r,rs,rt,beta,R,pa,rcut):
+	return (1-beta*R**2/(R+r**2)**2)*pow(R+r**2,1.-2.*beta)*int_funcs(r,rs,rt,beta,R,pa,rcut)/math.sqrt(2*R+r**2)
 
 def func(y,x,R,gal,rcut,p0):
 #	valid only for constant beta
-#	r_3D = R_projected + x**2
-	rc = get_data(gal)[3]
+	rs = get_data(gal)[3]
 	pa  = get_data(gal)[8]
 	beta = pa[2]
-	func = 4.e0*(R+x**2)*((R+x**2)**(-2.e0*beta))*(y**(2.e0*beta))*rhostar(y,rc)*G*M(y,pa,rcut)*\
-	(1-beta*R**2/(R+x**2)**2)/y/y/math.sqrt(2.e0*R+x**2)
+	#print 'y = ',y
+	func = 4.e0*pow(R+x**2,1.e0-2.e0*beta)*pow(y,2.e0*beta-2.e0)*rhostar(y,rs)*G*M(y,pa,rcut)*\
+	(1-beta*R**2/(R+x**2)**2)/math.sqrt(2.e0*R+x**2)
 	func *= p0 / mtokpc / 1.e6
 	return func
 
 ##########################################################################################################
 #	3d stellar density
 
-def rhostar(x,rc):
-	rhostar = (1.e0+x**2/rc**2)**(-5.e0/2.e0)
+def rhostar(x,rs):
+	rhostar = (1.e0+x**2/rs**2)**(-5.e0/2.e0)
 	return rhostar
      
 ##########################################################################################################
 #	projected 2d stellar density 
 
-def istar(R,rc):
-	istar = 4.e0/3.e0*rc*(1.e0+R**2/rc**2)**(-2.e0)
+def istar(R,rs):
+	istar = 4.e0/3.e0*rs*(1.e0+R**2/rs**2)**(-2.e0)
 	return istar
 
 ##########################################################################################################
