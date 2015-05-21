@@ -23,7 +23,7 @@ reject = 0
 #	Core of mcmc code
 print 'Fraction of accepted points,  # of accepted pts, value of likleihood'
 while (accept <= ncalls):
-	if(dlike(pa,like_val,galaxy)[0] >= laccept):
+	if(dlike(galaxy)[0] >= laccept):
 		laccept,p0 = dlike(galaxy)
 		accept += 1
 		output.write(('%14.5e %14.5e %14.5e %14.5e %14.5e %14.5e %14.5e %14.5e')%\
