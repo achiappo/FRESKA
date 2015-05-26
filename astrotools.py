@@ -1,19 +1,20 @@
+import time
 import numpy as np
-from scipy.integrate import romberg
+from scipy.integrate import romberg,quad,quadrature,fixed_quad
 from scipy.interpolate import UnivariateSpline
 import math
 
 # paramters
 nmax 	 = 1000
 nparams  = 7
-pi  	 = 3.14159e0
-rstar	 = 0.3e0
-kpctokm	 = 3.0856e16
-mtokpc   = 3.085e19
-Msun 	 = 1.9891e30					# Solar mass unit
+pi 	 = 3.14159e0
+rstar	 = 0.3e0					# 0.3 kpc
+kpctokm	 = 3.0856e16					# kpc to km
+kpctom 	 = 3.085e19					# kpc in m
+Msun 	 = 1.9891e30 					# Solar mass unit
 Mhalo 	 = 1.e9 * Msun					# Halo mass
 sigma_MW = 200 						# velocity dispersion of Milky Way in km s^-1
-G 	 = 6.67e-11*1.e30*1.e-9 			# km^3 Msun^-1 s^-2 
+G 	 = 6.67e-11*Msun				# m^3 Msun^-1 s^-2			
 
 #	gets the data from the input file
 def get_data(gal):
@@ -28,11 +29,11 @@ def get_data(gal):
 	for line in data:
 		parameters.append(line.split(','))
 
-	dwarfname 	 	= str(parameters[0][0]) 		# name of the dwarf
-	D 			= float(parameters[1][0]) 		# distance to galaxy in kpc
-	rs  			= float(parameters[2][0]) 		# half-light radius
-	rt  			= float(parameters[3][0]) 		# tidal radius 
-	like_val		= float(parameters[4][0])		# initial (arbitrary) value of the likelihood
+	dwarfname 	 	= str(parameters[0][0]) 			# name of the dwarf
+	D 			= float(parameters[1][0]) 			# distance to galaxy in kpc
+	rs  			= float(parameters[2][0]) 			# half-light radius
+	rt  			= float(parameters[3][0]) 			# tidal radius 
+	like_val		= float(parameters[4][0])		 	# initial (arbitrary) value of the likelihood
 	pmin = np.empty([0])
 	pmax = np.empty([0])
 	for i in range(5,len(data)):						
@@ -71,16 +72,62 @@ def dlike(gal):
 	Mvar,rs,beta,a,b,c,u = pa
 	rs = 10.e0**rs
 	arg1  = 0.e0
-	p2 	  = 0.e0
+	p2    = 0.e0
 	rcut  = pow(G*Mhalo*pow(D,2)/2./pow(sigma_MW,2),1/3.)
-	p0    = 10.e0**Mvar/get_M(rstar,pa,rcut)
+	p0    = 10.e0**Mvar/M(rstar,pa,rcut)
+	start_time = time.time()
 	for i in range(nstars):
-		s = get_sigmalos(abs(x[i]),gal,rcut,p0)
+		s_start_time = time.time()
+	 	s = get_sigmalos(abs(x[i]),gal,rcut,p0)
+	 	s_end_time = time.time()
+	 	print 'sigma_p(R) = ',s,' , calculation time = ',s_end_time - s_start_time
 		arg1 += 0.5e0*pow(v[i]-u,2)/(pow(dv[i],2)+pow(s,2))
 		p2   += 0.5e0*math.log(2*math.pi*(pow(dv[i],2)+pow(s,2)))
 	q = -arg1-p2 + like_val
 	dlike = math.exp(q)
+	end_time = time.time()
+	print  'Likelihood = ',dlike,' , evaluation time = ', end_time - start_time
 	return dlike,p0
+
+##########################################################################################################
+#	get the mass, after the initial spline 
+
+def M(x_in,pa,rcut):
+	nmass = 25								# differently from the Fortran code, init_mass()
+	xa,Sy = init_mass(pa,rcut)				# now passes the function object UnivariateSpline
+	x = np.log(x_in)
+	if x.any() > xa[-1]:
+		print 'M(r) called with r > r_tidal. Spline does not'
+		print 'extend beyond r_tidal. Stopping.'
+		print math.exp(xa[0]),math.exp(xa[nmass-1]),x_in
+	if x.any() < xa[0]:
+		print 'M(r) called with r < r_min where r_min is the'
+		print 'innermost data point radius. Spline does not'
+		print 'extend to r < r_min. Stopping.'
+		print math.exp(xa[0]),math.exp(xa[nmass-1]),x_in
+	M = np.exp(Sy(x))
+	return M
+
+##########################################################################################################
+#	spline the mass distribution
+
+def init_mass(pa,rcut):
+	nmass  = 25
+	rmin   = 1.e-4
+	rmax   = 1.e1
+	rmass  = np.empty([nmass])
+	massa  = np.empty([nmass])
+	mass2a = np.empty([nmass])
+	dr = math.log(rmax/rmin)/(nmass-1.e0)
+	for i in range(nmass):
+		r = rmin*math.exp(dr*i)
+		mass = get_M(r,pa,rcut)
+		rmass[i] = math.log(r)
+		massa[i] = math.log(mass)
+
+	return rmass,UnivariateSpline(rmass,massa,s=0)
+
+# with this Spline setting, the difference between M(r) obtained via integration or interpolation is O(10^-6)
 
 ##########################################################################################################
 
@@ -91,36 +138,25 @@ def dlike(gal):
 
 def get_sigmalos(R,gal,rcut,p0):
 	rs,rt = get_data(gal)[3:5]
-	pa  = get_data(gal)[8]
-	beta = pa[2]
-	a = 0.e0						# lower bound on outer integral
-	b = math.sqrt(rt-R)					# upper bound on outer integral
-	ss = romberg(funcr,a,rt,args=(rs,rt,beta,R,pa,rcut)) 	# outer integral
-	s  = math.sqrt(G*ss/istar(R,rs))			# projected 2-D velocity dispersion
+	pa    = get_data(gal)[8]
+	beta  = pa[2]
+	a = 0.e0															# lower bound of outer integral
+	b = np.sqrt(rt-R)													# upper bound of outer integral
+	ss = quad(funcr,a,b,args=(rs,rt,beta,R,pa,rcut))[0]*p0/kpctom/1.e6  # outer integral
+	s  = math.sqrt(G*ss/istar(R,rs))									# projected 2-D velocity dispersion
 	return s
     
 ##########################################################################################################
-# integrand of Eq. 2 in Walker et al. 2009 (with variable substitution t^2 = r - R)
-def funcs(s,rs,beta,pa,rcut):
-	return pow(s,2.*beta-2.)*rhostar(s,rs)*get_M(s,pa,rcut)
-# integrand of Eq. 3 Walker et al. 2009
-def funcr(t,rs,rt,beta,R,pa,rcut):
-	return (1-beta*R**2/(R+t**2)**2)*pow(R+t**2,1.-2.*beta)*\
-	romberg(funcs,R+t**2,rt,args=(rs,beta,pa,rcut))/math.sqrt(2*R+t**2)
+#	double integration
 
-'''
-# (alternative) two-dimensional function
-def func(y,x,R,gal,rcut,p0):
-#	valid only for constant beta
-	rs = get_data(gal)[3]
-	pa  = get_data(gal)[8]
-	beta = pa[2]
-	#print 'y = ',y
-	func = pow(R+x**2,1.-2.*beta)*pow(y,2.*beta-2.)*rhostar(y,rs)*G*M(y,pa,rcut)*\
-	(1-beta*R**2/(R+x**2)**2)/math.sqrt(2.e0*R+x**2)
-	func *= p0 / mtokpc / 1.e6
-	return func
-'''
+# integrand of Eq. 2 in notes (with variable substitution t^2 = r - R)
+def funcs(s,rs,beta,pa,rcut):
+	return pow(s,2.*beta-2.)*rhostar(s,rs)*M(s,pa,rcut)
+# integrand of Eq. 3 in notes
+def funcr(t,rs,rt,beta,R,pa,rcut):
+	x = R + pow(t,2.)
+	return (1-beta*pow(R,2)/pow(x,2))*pow(x,1.-2.*beta)*\
+	quadrature(funcs,x,rt,args=(rs,beta,pa,rcut),maxiter=120)[0]/np.sqrt(x+R)
 
 ##########################################################################################################
 #	3d stellar density
@@ -138,15 +174,15 @@ def istar(R,rs):
 #	evaluation of M(r)
 
 def get_M(x,pa,rcut):
-	return romberg(dmass,0.e0,x,args=(pa,rcut),divmax=15)
+	return quad(dmass,0.e0,x,args=(pa,rcut))[0]
 
 ##########################################################################################################
 #	integrand of M(r): 4pi*r^2*rho_DM(r)
 
 def dmass(x,pa,rcut):
 	r0 = pow(10.e0,pa[1])	# r0 of NFW coincides with rs, the half-light radius
-	a,b,c = pa[3:6]		# a,b,c shape parameters of NFW profile
-	return 4.e0*math.pi*pow(r0,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/r0,b),(c-a)/b)
+	a,b,c = pa[3:6]			# a,b,c shape parameters of NFW profile
+	return 4.e0*pi*pow(r0,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/r0,b),(c-a)/b) # miss exponential cut 
 
 ##########################################################################################################
 #	returned: ave,adev,sdev,var,skew,curt (moments of data)
