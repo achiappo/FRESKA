@@ -3,7 +3,7 @@ import sys
 import math
 from iminuit import Minuit
 from iminuit.util import describe
-from ATminuit2 import get_data,get_sigmalos
+from ATminuit import get_data,get_sigmalos
 from scipy.integrate import quadrature
 import numpy as np
 
