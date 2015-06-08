@@ -65,8 +65,8 @@ def int_profile(phi,D,rs,a,b,c):
 
 rt,D = data[4],data[-2]
 rho0    = 1.879E+08
-phi_max = pi/360.
-Dphi = 2*pi*(1-math.cos(phi_max))
-rs,a,b,c = 1.071,1.,1.,4.
+theta = pi/360.
+Dphi = 2*pi*(1-math.cos(0.5))#(1-math.cos(theta))	# I KNOW IT'S NOT RIGHT, BUT THE CORRECT VERSION
+rs,a,b,c = 1.071,1.,1.,4.				# LEADS TO A PYTHON ValueError
 Jvalue  = 2*pi*pow(rho0,2.)*quadrature(int_profile,0.,Dphi,args=(D,rs,a,b,c))[0]
-print Jvalue #math.log10(Jvalue)
+print math.log10(Jvalue)
