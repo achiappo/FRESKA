@@ -40,7 +40,7 @@ class LogLike:
         return dlike
 
 data = get_data(galaxy)
-
+'''
 # building a function object to be passed to Minuit and evaluation of -MLE parameters
 lh = LogLike(data)
 kwdargs = dict(rho0=1.e7,rs=1.,error_rho0=0.01,error_rs=0.01,limit_rho0=(1.e5,1.e9),limit_rs=(1.e-3,1.e2))
@@ -55,14 +55,13 @@ bestfit = m.migrad()
 #b    = bestfit[1][4]["value"]
 #c    = bestfit[1][5]["value"]
 
-# integrand of the J factor, i.e. DM density profile squared
-def profile(s,D,rho0,rs,a,b,c):
+# integrand of the J factor (i.e. DM density profile squared) along l.o.s.
+def profile(s,D,rs,a,b,c):
 	r = D-s
-    return pow(rho0/pow(r/rs,a)/pow(1+pow(r/rs,b),(c-a)/b),2.)
+	return pow(r/rs,-2.*a)*pow(1+pow(r/rs,b),2*(a-c)/b)
 
 rt,D = data[4],data[-2]
 rho0    = 1.879E+08
-rs,a,b,c = 1.071,1,1,4
-Jvalue  = quadrature(profile,0.,rt,args=(D,rho0,rs,a,b,c),maxiter=150)[0]
+rs,a,b,c = 1.071,1.,1.,4.
+Jvalue  = pow(rho0,2.)*quadrature(profile,0.,D+rt,args=(D,rs,a,b,c))[0]/4/pi
 print math.log10(Jvalue)
-'''
