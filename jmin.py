@@ -25,7 +25,7 @@ class LogLike:
     def __init__(self,data):
         self.data = data
     
-    def compute(self,rho0,rs):
+    def compute(self,rho0,rs): #,a,b,c):
         x,v,dv,rh,rt,nstars,D,pa = self.data
         beta,u    = pa[2],pa[-1]
         arg1,arg2 = 0.,0.
@@ -49,10 +49,9 @@ bestfit = m.migrad()
 
 #rho0 = bestfit[1][0]["value"]
 #rs   = bestfit[1][1]["value"]
-#beta = bestfit[1][2]["value"]
-#a    = bestfit[1][3]["value"]
-#b    = bestfit[1][4]["value"]
-#c    = bestfit[1][5]["value"]
+#a    = bestfit[1][2]["value"]
+#b    = bestfit[1][3]["value"]
+#c    = bestfit[1][4]["value"]
 
 # integrand of the J factor along l.o.s.
 def profile(s,phi,D,rs,a,b,c):
