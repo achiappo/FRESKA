@@ -7,13 +7,13 @@ from scipy.interpolate import UnivariateSpline
 # paramters
 nmax 	 = 1000
 nparams  = 7
-pi 	 = math.pi
-rstar	 = 0.3e0					# 0.3 kpc
-kpctom 	 = 3.085e19					# kpc in m
-Msun 	 = 1.9891e30 					# Solar mass unit
-Mhalo 	 = 1.e9 * Msun					# Halo mass
+pi 		 = math.pi
+rstar	 = 0.3e0						# 0.3 kpc
+kpctom 	 = 3.085e19				# kpc in m
+Msun 	 = 1.9891e30 				# Solar mass unit
+Mhalo 	 = 1.e9 * Msun		# Halo mass
 sigma_MW = 200 						# velocity dispersion of Milky Way in km s^-1
-G 	 = 6.67e-11*Msun				# m^3 Msun^-1 s^-2			
+G 		 = 6.67e-11*Msun		# m^3 Msun^-1 s^-2			
 
 
 def get_data(gal):
@@ -40,9 +40,15 @@ def get_data(gal):
         pmax = np.append(pmax,float(parameters[i][1]))  # beta(velocity anisotropy) a,b,c NFW shape parameters
     
     velocities = open('data/velocities/velocities_'+gal+'.dat','r').readlines()
-    x, v, dv, dummy = np.loadtxt('data/velocities/velocities_dra.dat', unpack=True)
-    nstars = x.size
-    ave = moment(v,nstars)[0]
+    x  = np.empty([0])
+    v  = np.empty([0])
+    dv = np.empty([0])
+    for line in velocities:
+        x  = np.append(x,float(line.split()[0]))        # star position
+        v  = np.append(v,float(line.split()[1]))        # star velocity
+        dv = np.append(dv,float(line.split()[2]))       # star velocity dispersion
+    nstars = len(velocities)
+    ave,adev,sdev,var,skew,curt = moment(v,nstars)  
     vsys_min = ave-6.e0
     vsys_max = ave+6.e0
 
@@ -55,7 +61,6 @@ def get_data(gal):
     pmin = np.append(pmin,vsys_min)
     pmax = np.append(pmax,vsys_max)
     pa = 0.5e0* (pmax+pmin)
-    pa[0] = 10.**pa[0]
     pa[1] = 10.**pa[1]
 
     return x,v,dv,rh,rt,nstars,D,pa
@@ -108,24 +113,24 @@ def init_mass(rs,a,b,c):
 #   defined in appendix eq 2 of Strigari et al, Nature 2008. 
 #   This makes sure that the integral doesn't numerically diverge. 
 
-def get_sigmalos(R,rho0,rt,rh,rs,beta,a,b,c):
+def get_sigmalos(R,p0,rt,beta,rh,rs,a,b,c):
     a = 0.e0                                                                # lower bound of outer integral
     b = np.sqrt(rt-R)                                                       # upper bound of outer integral
-    ss = quad(funcr,a,b,args=(R,rt,rh,rs,beta,a,b,c),epsabs=1.e-6)[0]       # outer integral [in km^2 s^-2]
-    s  = math.sqrt(G*ss*rho0/kpctom/1.e6/istar(R,rh))                       # projected 2-D velocity dispersion
+    ss = quad(funcr,a,b,args=(R,rt,beta,rh,rs,a,b,c))[0]*p0/kpctom/1.e6     # outer integral [in km^2 s^-2]
+    s  = math.sqrt(G*ss/istar(R,rh))                                        # projected 2-D velocity dispersion
     return s
     
 ##########################################################################################################
 #   double integration
 
 # integrand of Eq. 2 in notes (with variable substitution t^2 = r - R)
-def funcs(s,rh,rs,beta,a,b,c):
+def funcs(s,beta,rh,rs,a,b,c):
     return pow(s,2.*beta-2.)*rhostar(s,rh)*M(s,rs,a,b,c)
 # integrand of Eq. 3 in notes
-def funcr(t,R,rt,rh,rs,beta,a,b,c):
+def funcr(t,R,rt,beta,rh,rs,a,b,c):
     x = R + pow(t,2.)
     return (1-beta*pow(R,2)/pow(x,2))*pow(x,1.-2.*beta)*\
-    quadrature(funcs,x,rt,args=(rh,rs,beta,a,b,c),tol=1.e-6)[0]/np.sqrt(x+R)
+    quadrature(funcs,x,rt,args=(beta,rh,rs,a,b,c),maxiter=120)[0]/np.sqrt(x+R)
 
 ##########################################################################################################
 #   3d stellar density
@@ -149,7 +154,7 @@ def get_M(x,rs,a,b,c):
 #   integrand of M(r): 4pi*r^2*rho_DM(r)
 
 def dmass(x,rs,a,b,c):
-    return 4.e0*pi*pow(rs,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/rs,b),(c-a)/b)
+    return 4.e0*pi*pow(rs,a)*pow(x,2.e0-a)/pow(1.e0+pow(x/rs,b),(c-a)/b) # miss exponential cut 
 
 ##########################################################################################################
 #   returned: ave,adev,sdev,var,skew,curt (moments of data)
