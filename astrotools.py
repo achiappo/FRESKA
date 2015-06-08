@@ -40,14 +40,8 @@ def get_data(gal):
         pmax = np.append(pmax,float(parameters[i][1]))  # beta(velocity anisotropy) a,b,c NFW shape parameters
     
     velocities = open('data/velocities/velocities_'+gal+'.dat','r').readlines()
-    x  = np.empty([0])
-    v  = np.empty([0])
-    dv = np.empty([0])
-    for line in velocities:
-        x  = np.append(x,float(line.split()[0]))        # star position
-        v  = np.append(v,float(line.split()[1]))        # star velocity
-        dv = np.append(dv,float(line.split()[2]))       # star velocity dispersion
-    nstars = len(velocities)
+    x, v, dv, dummy = np.loadtxt('data/velocities/velocities_dra.dat', unpack=True)
+    nstars = x.size
     ave = moment(v,nstars)[0]
     vsys_min = ave-6.e0
     vsys_max = ave+6.e0
