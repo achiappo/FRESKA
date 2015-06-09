@@ -67,7 +67,7 @@ rho0    = 1.879E+08
 theta = pi/360.
 Dphi = 2*pi*(1-math.cos(theta))
 rs,a,b,c = 1.071,1.,1.,4.
-Jvalue  = 2*pi*pow(rho0,2.)*quad(int_profile,0.,Dphi,args=(D,rs,a,b,c),epsabs=1.e-4)[0]
+Jvalue  = 2*pi*pow(rho0,2.)*pow(rs,3.)*quad(int_profile,0.,Dphi,args=(D,rs,a,b,c),epsabs=1.e-4)[0]
 print math.log10(Jvalue)
 
 
