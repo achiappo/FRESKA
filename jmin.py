@@ -1,10 +1,12 @@
 #!/usr/bin/python
+# author Andrea Chiappo		<andrea.chiappo@fysik.su.se>
 import sys
 import math
+import yaml
 from iminuit import Minuit
 from iminuit.util import describe
 from ATminuit import get_data,get_sigmalos
-from scipy.integrate import quadrature
+from scipy.integrate import quadrature,quad
 import numpy as np
 
 # paramters
@@ -14,10 +16,10 @@ Mhalo    = 1.e9 * Msun                  # Halo mass
 sigma_MW = 200                          # velocity dispersion of Milky Way in km s^-1
 G        = 6.67e-11*Msun                # m^3 Msun^-1 s^-2          
 
-galaxy  = sys.argv[1]                   # get the galaxy name from the command line
+dwarf  = sys.argv[1]                    # get the galaxy name from the command line
 
 #######################################################################################################
-#                                               MAIN CODE
+#			MAIN CODE: MINUIT MINIMISATION OF -log(LIKE) TO OBTAIN BEST-FIT PARAMETERS
 #######################################################################################################
   
 # class necessary to fit the LogLike function evaluated at its data points
@@ -29,44 +31,37 @@ class LogLike:
         x,v,dv,rh,rt,nstars,D,pa = self.data
         beta,u    = pa[2],pa[-1]
         arg1,arg2 = 0.,0.
-        a,b,c = 1.,1.,3.
+        a,b,c = 1.,1.,3.    # NFW
         #rcut  = pow(G*Mhalo*pow(D,2)/2./pow(sigma_MW,2),1/3.)      # truncation scale on DM density profile
         for i in range(nstars):
-            s     = get_sigmalos(abs(x[i]),rho0,rt,rh,beta,rs,a,b,c)
-            arg1 += 0.5e0*pow(v[i]-u,2)/(pow(dv[i],2)+pow(s,2))
-            arg2 += 0.5e0*math.log(2*pi*(pow(dv[i],2)+pow(s,2)))
+            s     = get_sigmalos(abs(x[i]),10**rho0,rt,rh,beta,rs,a,b,c)
+            arg1 += 0.5*pow(v[i]-u,2)/(pow(dv[i],2)+pow(s,2))
+            arg2 += 0.5*math.log(2*pi*(pow(dv[i],2)+pow(s,2)))
         dlike  = arg1+arg2
         return dlike
 
-data = get_data(galaxy)
-'''
+data = get_data(dwarf)
 # building a function object to be passed to Minuit and evaluation of -MLE parameters
 lh = LogLike(data)
-kwdargs = dict(rho0=1.e7,rs=1.,error_rho0=0.01,error_rs=0.01,limit_rho0=(1.e5,1.e9),limit_rs=(1.e-3,1.e2))
-m = Minuit(lh.compute,**kwdargs)
+
+kwdargs = dict(rho0=7.,rs=0.5,error_rho0=1.e-2,error_rs=1.e-2,limit_rho0=(5.,9.),limit_rs=(0.,2.))
+m = Minuit(lh.compute,errordef=0.5,pedantic=False,**kwdargs)
+#m.tol = 1.e-6
 bestfit = m.migrad()
-'''
+rho0 = bestfit[1][0]["value"]
+rs   = bestfit[1][1]["value"]
+yaml.dump(bestfit,open("output/%s.yaml"%dwarf,"wb"))
 
-#rho0 = bestfit[1][0]["value"]
-#rs   = bestfit[1][1]["value"]
-#beta = bestfit[1][2]["value"]
-#a    = bestfit[1][3]["value"]
-#b    = bestfit[1][4]["value"]
-#c    = bestfit[1][5]["value"]
+#######################################################################################################
+#			CONSTRUCTION OF PARAMETERS GRID TO VERIFY THE NON-LOCALITY OF BEST-FIT ARRAY
+#######################################################################################################
 
-# integrand of the J factor along l.o.s.
-def profile(s,phi,D,rs,a,b,c):
-	r = np.sqrt(pow(s,2)+pow(D,2)-2*s*D*np.cos(phi))
-	return pow(r/rs,-2.*a)*pow(1+pow(r/rs,b),2*(a-c)/b)
+npts = 20												# parameter controlling the density of the grid
+rho0_array = np.linspace(rho0-1.,rho0+1.,num=npts)  	# build rho0 grid points 
+rs_array   = np.linspace(.1,rs+1.,num=npts)				# build r_s grid points
+pts = np.zeros([len(rs_array),len(rho0_array)])			# build 2D empty grid
+for i,rho0 in enumerate(rho0_array):
+    for j,rs in enumerate(rs_array):	                # fill the grid with -log(Like)
+        pts[i,j] = lh.compute(rho0,rs)					# evaluated at each point
 
-# integrand of the J factor over the solid angle
-def int_profile(phi,D,rs,a,b,c):
-	return quadrature(profile,0.,D+rt,args=(phi,D,rs,a,b,c))[0]*np.sin(phi)
-
-rt,D = data[4],data[-2]
-rho0    = 1.879E+08
-theta = pi/360.
-Dphi = 2*pi*(1-math.cos(0.5))#(1-math.cos(theta))	# I KNOW IT'S NOT RIGHT, BUT THE CORRECT VERSION
-rs,a,b,c = 1.071,1.,1.,4.				# LEADS TO A PYTHON ValueError
-Jvalue  = 2*pi*pow(rho0,2.)*quadrature(int_profile,0.,Dphi,args=(D,rs,a,b,c))[0]
-print math.log10(Jvalue)
+np.save('output/'+dwarf,pts)	# save the grid values into python-exacutable binary for plotting purposes
