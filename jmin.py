@@ -56,12 +56,12 @@ yaml.dump(bestfit,open("output/%s.yaml"%dwarf,"wb"))
 #			CONSTRUCTION OF PARAMETERS GRID TO VERIFY THE NON-LOCALITY OF BEST-FIT ARRAY
 #######################################################################################################
 
-npts = 20												# parameter controlling the density of the grid
+npts = 20											                       	# parameter controlling the density of the grid
 rho0_array = np.linspace(rho0-1.,rho0+1.,num=npts)  	# build rho0 grid points 
-rs_array   = np.linspace(.1,rs+1.,num=npts)				# build r_s grid points
-pts = np.zeros([len(rs_array),len(rho0_array)])			# build 2D empty grid
+rs_array   = np.linspace(.1,rs+1.,num=npts)		    		# build r_s grid points
+pts = np.zeros([len(rs_array),len(rho0_array)])		  	# build 2D empty grid
 for i,rho0 in enumerate(rho0_array):
     for j,rs in enumerate(rs_array):	                # fill the grid with -log(Like)
-        pts[i,j] = lh.compute(rho0,rs)					# evaluated at each point
+        pts[i,j] = lh.compute(rho0,rs)				      	# evaluated at each point
 
 np.save('output/'+dwarf,pts)	# save the grid values into python-exacutable binary for plotting purposes
