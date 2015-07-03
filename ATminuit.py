@@ -108,9 +108,9 @@ def init_mass(rs,a,b,c):
 #   This makes sure that the integral doesn't numerically diverge. 
 
 def get_sigmalos(R,rho0,rt,rh,rs,beta,a,b,c):
-    a = 0.e0                                                                # lower bound of outer integral
-    b = np.sqrt(rt-R)                                                       # upper bound of outer integral
-    ss = quad(funcr,a,b,args=(R,rt,rh,rs,beta,a,b,c),epsabs=1.e-6)[0]       # outer integral [in km^2 s^-2]
+    tmin = 0.e0                                                                # lower bound of outer integral
+    tmax = np.sqrt(rt-R)                                                       # upper bound of outer integral
+    ss = quad(funcr, tmin, tmax,args=(R,rt,rh,rs,beta,a,b,c),epsabs=1.e-6)[0]       # outer integral [in km^2 s^-2]
     s  = math.sqrt(G*ss*rho0/kpctom/1.e6/istar(R,rh))                       # projected 2-D velocity dispersion
     return s
     

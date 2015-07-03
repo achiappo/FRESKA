@@ -26,7 +26,8 @@ dwarf  = sys.argv[1]                    # get the galaxy name from the command l
 class LogLike:
     def __init__(self,data):
         self.data = data
-    
+        print data
+
     def compute(self,rho0,rs):
         x,v,dv,rh,rt,nstars,D,pa = self.data
         beta,u    = pa[2],pa[-1]
@@ -34,7 +35,7 @@ class LogLike:
         a,b,c = 1.,1.,3.    # NFW
         #rcut  = pow(G*Mhalo*pow(D,2)/2./pow(sigma_MW,2),1/3.)      # truncation scale on DM density profile
         for i in range(nstars):
-            s     = get_sigmalos(abs(x[i]),10**rho0,rt,rh,beta,rs,a,b,c)
+            s     = get_sigmalos(abs(x[i]),10**rho0,rt,rh,rs,beta,a,b,c)
             arg1 += 0.5*pow(v[i]-u,2)/(pow(dv[i],2)+pow(s,2))
             arg2 += 0.5*math.log(2*pi*(pow(dv[i],2)+pow(s,2)))
         dlike  = arg1+arg2
