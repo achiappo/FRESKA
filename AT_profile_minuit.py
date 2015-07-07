@@ -58,10 +58,8 @@ def get_data(gal):
 #   Get the line-of-sight velocity dispersion (variable substution: t^2 = r-R, Strigari et al, Nature 2008)
 
 def get_sigmalos(R,rt,rh,beta,rs,a,b,c):
-    tmin = 0.e0                                                                # lower bound of outer integral
-    tmax = np.sqrt(rt-R)                                                       # upper bound of outer integral
-    ss = quad(funcr,tmin,tmax,args=(R,rt,rh,beta,rs,a,b,c),epsabs=1.e-5)[0]    # outer integral [in km^2 s^-2]
-    s  = math.sqrt(G*ss/kpctom/1.e6/istar(R,rh))	                           # projected 2-D velocity dispersion
+    ss = quad(funcr,0.,np.inf,args=(R,rt,rh,beta,rs,a,b,c),epsabs=1.e-5)[0] # outer integral [in km^2 s^-2]
+    s  = math.sqrt(G*ss/kpctom/1.e6/istar(R,rh))	                        # projected 2-D velocity dispersion
     return s
     
 ##########################################################################################################
@@ -74,11 +72,11 @@ def funcs(s,rh,beta,rs,a,b,c):
 def funcr(t,R,rt,rh,beta,rs,a,b,c):
     x = R + pow(t,2.)
     return (1-beta*pow(R,2)/pow(x,2))*pow(x,1.-2.*beta)*\
-    quadrature(funcs,x,rt,args=(rh,beta,rs,a,b,c),tol=1.e-5)[0]/np.sqrt(x+R)
+    quad(funcs,x,np.inf,args=(rh,beta,rs,a,b,c),epsabs=1.e-5)[0]/np.sqrt(x+R)
 
 ##########################################################################################################
 #   get the mass, after the initial spline 
-
+'''	
 def M(x_in,rs,a,b,c):
     nmass = 25                              # differently from the Fortran code, init_mass()
     xa,Sy = init_mass(rs,a,b,c)             # now passes the function object UnivariateSpline
@@ -94,6 +92,9 @@ def M(x_in,rs,a,b,c):
         print math.exp(xa[0]),math.exp(xa[nmass-1]),x_in
     M = np.exp(Sy(x))
     return M
+'''
+def M(x,rs,a,b,c):								# analytic formulation of M(r) in NFW case
+	return 4*pi*(math.log(1+x/rs)-1/(rs/x+1))
 
 ##########################################################################################################
 #   spline the mass distribution
@@ -101,7 +102,8 @@ def M(x_in,rs,a,b,c):
 def init_mass(rs,a,b,c):
     r = np.logspace(-4.,1.,num=25,base=np.e)
     x=r/rs
-    mass = 4*pi*rs**3*x**(3.-a)*hyp2f1((3.-a)/b, (c-a)/b, (-a+b+3)/b,-x**b)/(3.-a)
+    #mass = 4*pi*rs**3*x**(3.-a)*hyp2f1((3.-a)/b, (c-a)/b, (-a+b+3)/b,-x**b)/(3.-a)
+    mass = 4*pi*x**(3.-a)*hyp2f1((3.-a)/b,(c-a)/b,(-a+b+3)/b,-x**b)/(3.-a) # uncomment to fit rho0*rs**3
     rmass = np.log(r)
     massa = np.log(mass)
 
