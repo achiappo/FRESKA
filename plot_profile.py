@@ -2,9 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
+# this script is meant to plot the profile likelihood as a function of the scale
+# radius of the DM density profile rs and compare it with the 1-sigma threshold
+
 dwarf = sys.argv[1]
 
-rs,rho0,fval = np.loadtxt('output_%s.dat'%dwarf,unpack=True,skiprows=1)
+rs,rho0,fval = np.loadtxt('output/vals_%s.dat'%dwarf,unpack=True,skiprows=1)
 
 fig = plt.figure()
 fig.suptitle('%s'%dwarf,fontsize=18)
