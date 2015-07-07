@@ -28,30 +28,45 @@ class LogLike:
     def __init__(self,data):
         self.data = data
     
-    def compute(self,rho0):
+    def compute(self,f):			# f = rho0*rs**3
     	s = self.data
         arg1,arg2 = 0.,0.
         for i in range(nstars):
-            arg1 += pow(v[i]-u,2)/(pow(dv[i],2)+pow(s[i],2)*10**rho0)
-            arg2 += math.log(2*pi*(pow(dv[i],2)+pow(s[i],2)*10**rho0))
+            arg1 += pow(v[i]-u,2)/(pow(dv[i],2)+pow(s[i],2)*10**f)
+            arg2 += math.log(2*pi*(pow(dv[i],2)+pow(s[i],2)*10**f))
         dlike  = arg1+arg2
         return dlike/2.
 
 #######################################################################################################
 # profile likelihood technique
-BFrho0 = []
-for rs in np.linspace(0.01,2.,num=50):									# scan over the parameters rs
+BFf = []
+val = []
+rs_values = np.linspace(1.e-3,10.,num=1000)			# build rho0 grid points 
+f_values = np.linspace(0.,9.,num=1000)				# build r_s grid points
+pts = np.zeros([len(rs_values),len(f_values)])		# build 2D empty grid
+
+for j,rs in enumerate(rs_values):					# scan over the parameters rs
 	s = np.empty([0])
 	for i in range(len(x)):
 		s = np.append(s,get_sigmalos(abs(x[i]),rt,rh,beta,rs,a,b,c))	# evaluation of the sigma_p
 	
 	# building a function object to be passed to Minuit and evaluation of -MLE parameters
 	lh = LogLike(s)
-	m = Minuit(lh.compute,errordef=0.5,pedantic=False,rho0=7.,error_rho0=1.e-2,limit_rho0=(5.,9.))
+	m = Minuit(lh.compute,errordef=0.5,pedantic=False,f=5.,error_f=1.e-4,limit_f=(0.,9.))
+	m.tol = 1.e-6
 	bestfit = m.migrad()
-	BFrho0.append(bestfit[1][0]["value"])
-	
-for rs,rho0 in zip(np.linspace(0.01,2.,num=50),BFrho0):
-	print rs,rho0 
+	BFf.append(bestfit[1][0]["value"]) #-3*math.log10(rs))
+	val.append(bestfit[0]['fval'])
 
+	# generate grid
+	for i,f in enumerate(f_values):
+		pts[i,j] = lh.compute(f)
+
+np.save('output/'+dwarf,pts)	# save the grid values into python-exacutable binary for plotting purposes
+
+save = open('output_%s.dat'%dwarf,'w')
+save.write(('%6s %6s %10s %s')%('rs','rho0','-logLike','\n'))
+for rs,f,val in zip(rs_values,BFf,val):
+	save.write('%6.3f %6.2f %10.4f %s'%(rs,f,val,'\n'))
+save.close()
 
