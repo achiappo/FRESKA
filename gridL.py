@@ -10,11 +10,6 @@ import numpy as np
 
 # paramters
 pi       = math.pi
-Msun     = 1.9891e30                    # Solar mass unit
-Mhalo    = 1.e9 * Msun                  # Halo mass
-sigma_MW = 200                          # velocity dispersion of Milky Way in km s^-1
-G        = 6.67e-11*Msun                # m^3 Msun^-1 s^-2          
-
 dwarf  = sys.argv[1]                    	# get the galaxy name from the command line
 
 x,v,dv,rh,rt,nstars,D,pa = get_data(dwarf) 	#	extraction of data relative 
@@ -30,22 +25,17 @@ class LogLike(object):
     
     def compute(self,rhos):
     	s = self.data
-        arg1,arg2 = 0.,0.
-        for i in range(nstars):
-            arg1 += pow(v[i]-u,2)/(pow(dv[i],2)+pow(s[i],2)*rhos)
-            arg2 += math.log(2*pi*(pow(dv[i],2)+pow(s[i],2)*rhos))
-        dlike  = arg1+arg2
+        Sigma = dv*dv+s*s*rhos
+        dlike  = (np.log(2*pi*Sigma)+(v-u)**2/Sigma).sum()
         return dlike/2.
 
 #######################################################################################################
 # profile likelihood technique
-BFf = []
-val = []
-rhos_values = np.logspace(9.,5.,100)				# build r_s grid points
-rs_values 	= np.linspace(1.e-2,2.,100)				# build rho0 grid points 
-pts = np.zeros([len(rhos_values),len(rs_values)])	# build 2D empty grid
+rhos_values = np.logspace(6.,9.,100)						# build r_s grid points
+rs_values   = np.logspace(np.log10(0.1),np.log10(5.),100)	# build rho0 grid points 
+pts = np.zeros([len(rhos_values),len(rs_values)])			# build 2D empty grid
 
-for j,rs in enumerate(rs_values):					# scan over the parameters rs
+for j,rs in enumerate(rs_values):							# scan over the parameters rs
 	s = np.empty([0])
 	for i in range(nstars):
 		s = np.append(s,get_sigmalos(abs(x[i]),rh,beta,rs,a,b,c))	# evaluation of the sigma_p
@@ -57,4 +47,4 @@ for j,rs in enumerate(rs_values):					# scan over the parameters rs
 		pts[i,j] = L.compute(rhos)
 		print '%4.0f %8.3f %4.0f %12.3f %10.4f'%(j+1,rs,i+1,rhos,pts[i,j])
 
-np.save('output/lgrid_'+dwarf,pts)	# save the grid values into python-exacutable binary for plotting purposes
+np.save('output/Lgrid_'+dwarf,pts)	# save the grid values into python-exacutable binary for plotting purposes
