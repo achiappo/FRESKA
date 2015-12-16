@@ -5,6 +5,7 @@ FUNCTIONS.PYX MODULE
 This file contains the definitions of various functions used by the main script (ASTROJPY). For a faster execution, these are
 written in a format compatible with Python Cythonize package. In order to use it, it must first be compiled with a C++ compiler. A Python script which does this is also included, "setup.py", which should be executed with the following command
 $ python setup.py build_ext --inplace
+
 -------------------------------------------------------------------------------------------------------------------------------
 
 DATA INPUT
@@ -15,6 +16,7 @@ Data should be input into the code as a three-columns datafile consisting of
 2) measured line-of-sight velocity of each star (in units of km/s)
 
 3) measurement error on the line-of-sight velocity in (in units of km/s)
+
 -------------------------------------------------------------------------------------------------------------------------------
 
 DATA OUTPUT
