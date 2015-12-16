@@ -5,6 +5,7 @@ FUNCTIONS.PYX MODULE
 This file contains the definitions of various functions used by the main script (ASTROJPY). For a faster execution, these are
 written in a format compatible with Python Cythonize package. In order to use it, it must first be compiled with a C++ compiler. A Python script which does this is also included, "setup.py", which should be executed with the following command
 $ python setup.py build_ext --inplace
+-------------------------------------------------------------------------------------------------------------------------------
 
 DATA INPUT
 Data should be input into the code as a three-columns datafile consisting of
@@ -14,6 +15,7 @@ Data should be input into the code as a three-columns datafile consisting of
 2) measured line-of-sight velocity of each star (in units of km/s)
 
 3) measurement error on the line-of-sight velocity in (in units of km/s)
+-------------------------------------------------------------------------------------------------------------------------------
 
 DATA OUTPUT
 The code produces two files:
@@ -22,4 +24,7 @@ a) "Like.npy" consists of the 2D, vertically stacked array of the profile likeli
 J is given in log10 basis and has units of Gev^2/cm^5. 
 
 b) "results.yaml" contains a (binary) python dictionary with the results of the statistical analysis on the profile
-  Likelihood. These consist of: 
+  Likelihood curve. These consist of: its minimum (corresponfing to the Maximum Likelihood J value); the edges of the 1,2 and    3sigma confidence intervals of the minimum; the velocity anisotropy scale parameter.
+
+In order to visualize the likelihood curve, we include a Python plotting script called "plot.py"
+
