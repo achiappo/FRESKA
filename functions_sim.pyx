@@ -9,7 +9,7 @@ import numpy as np
 # stellar density profile 
 def nu(double r, double rh):
 	#return (r/rh)**(-.1)*(1+(r/rh)**2)**(-2.45) #(used for gamma* = 0.1 , Plum)
-    return (r/rh)**-1*(1+(r/rh)**2)**-2 #(used for gamma* = 1 , non-Plum)
+	return (r/rh)**-1*(1+(r/rh)**2)**-2 #(used for gamma* = 1 , non-Plum)
 
 ##########################################################################
 # Mass of cusped NFW DMH
@@ -29,7 +29,7 @@ def integrand1(double s, double rh, double r0):
 	return result
 
 def integral1(double smin, double rh, double r0):
-	res,err = quad(integrand1,smin,+np.inf,args=(rh, r0),epsabs=1.e-10,epsrel=1.e-10,limit=1000)
+	res,err = quad(integrand1,smin,+np.inf,args=(rh, r0),epsabs=1.e-3,epsrel=1.e-3,limit=100)
 	return res
 
 def integrand2(double z, double rh, double r0, double R):
@@ -38,7 +38,7 @@ def integrand2(double z, double rh, double r0, double R):
 	return result * res
 
 def integral2(double r0, double rh, double R):
-	res,err = quad(integrand2,1.,+np.inf,args=(rh,r0,R),epsabs=1.e-10,epsrel=1.e-10,limit=1000)
+	res,err = quad(integrand2,1.,+np.inf,args=(rh,r0,R),epsabs=1.e-3,epsrel=1.e-3,limit=100)
 	return res
 
 ##########################################################################
@@ -66,7 +66,6 @@ def Jfactor(double D, double rt, double r0, double rho0, double tmax):
 	rtprime=rt/r0
 	Msun2kpc5_GeVcm5 = 4463954.894661358
 	cst = 4*pi*rho0**2*r0*Msun2kpc5_GeVcm5
-	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin),
-		opts=[{'epsabs':1.e-10,'epsrel':1.e-10,'limit':1000},
-		{'epsabs':1.e-10,'epsrel':1.e-10,'limit':1000}])
+	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin))
 	return cst*res[0]
+
