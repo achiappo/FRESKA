@@ -1,6 +1,8 @@
 # ASTROJPY
 The Python script ASTROJPY allows to build the (-log) profile Likelihood for the astrophysical factor, J, of Dwarf Spheroidal Satellite Galaxies (dSPhs) of the Milky Way. It uses as input the kinematic data from the dSphs member stars. It also performs a basic statistical analysis, consisting in the determination of the Maximum Likelihood value of J and its Confidence Intervals. This README contains the instructions on how to use it correctly.
 
+-------------------------------------------------------------------------------------------------------------------------------
+
 FUNCTIONS.PYX MODULE
 This file contains the definitions of various functions used by the main script (ASTROJPY). For a faster execution, these are
 written in a format compatible with Python Cythonize package. In order to use it, it must first be compiled with a C++ compiler. A Python script which does this is also included, "setup.py", which should be executed with the following command
