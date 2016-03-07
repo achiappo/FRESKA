@@ -7,11 +7,11 @@ import numpy as np
 #					FUNCTIONS DEFINITIONS
 ###################################################################################################
 # stellar density profile 
-def nu(double r):
-	#return 1./r**0.1/(1.+r**2)**2.45 #(used for gamma* = 0.1 , Plum)
-	return 1./r/(1.+r**2)**2 #(used for gamma* = 1 , non-Plum)
+def nu(double s):
+	return 1./s**0.1/(1+s**2)**2.45 #(used for gamma* = 0.1 , Plum)
+	#return 1./s/(1+s**2)**2 #(used for gamma* = 1 , non-Plum)
 
-###############################################################################################
+##########################################################################
 # Mass of cusped NFW DMH
 def get_M_NFW_cusp(double x):
 	return np.log(1.+x)-x/(1.+x)
@@ -20,33 +20,31 @@ def get_M_NFW_cusp(double x):
 def get_M_NFW_core(double x):
 	return np.log(1.+x)-(2.*x+3.*x**2)*0.5/(1.+x)**2
 
-###############################################################################################
+##########################################################################
 # numerical integrals in sigma_los
 
-def integrand1(double y, double alpha, double beta):
-	return y**(2.*beta-2.)*nu(y)*get_M_NFW_cusp(y*alpha)
-	#return y**(2.*beta-2.)nu(y)*get_M_NFW_core(y*alpha)
+def integrand1(double y, double alpha):
+	#return nu(y)*get_M_NFW_cusp(y*alpha)/y**2		# for Cusped NFW
+	return nu(y)*get_M_NFW_core(y*alpha)/y**2 		# for Cored NFW
 
-def integral1(double ymin, double alpha, double beta):
-	return quad(integrand1,ymin,+np.inf,args=(alpha,beta),epsabs=1.e-2,epsrel=1.e-2)[0]
+def integral1(double smin, double alpha):
+	return quad(integrand1,smin,+np.inf,args=(alpha),epsabs=1.e-2,epsrel=1.e-2)[0]
 
-def integrand2(double z, double alpha, double beta, double gamma):
-	result = (1.-beta/z**2)*z**(1.-2.*beta)/np.sqrt(z*z-1.)
-	res = integral1(z*gamma,alpha,beta)
-	return result * res
+def integrand2(double z, double gamma, double alpha):
+	return integral1(z*gamma, alpha)*z/np.sqrt(z*z-1.)
 
-def integral2(double alpha, double beta, double gamma):
-	return quad(integrand2,1.,+np.inf,args=(alpha,beta,gamma),epsabs=1.e-2,epsrel=1.e-2)[0]
+def integral2(double gamma, double alpha):
+	return quad(integrand2,1.,+np.inf,args=(gamma, alpha),epsabs=1.e-2,epsrel=1.e-2)[0]
 
-###############################################################################################
+##########################################################################
 # jfactor evaluation functions
 
 def func(double u, double y, double D, double rt, double ymin):
-	return 1./(1.+u)**4/u/sqrt(u*u-D**2*(1-y*y))	# for Cusped NFW
-	#return u/(1.+u)**6/sqrt(u*u-D**2*(1-y*y))	 	# for Cored NFW
+	#return 1./(1.+u)**4/u/sqrt(u*u-D**2*(1.-y*y))	# for Cusped NFW
+	return u/(1.+u)**6/sqrt(u*u-D**2*(1.-y*y))	 	# for Cored NFW
 
 def lim_u(double y, double D, double rt, double ymin):
-	return [D*sqrt(1-y*y), rt]
+	return [D*sqrt(1.-y*y), rt]
 
 def lim_y(double D, double rt, double ymin):
 	return [ymin,1.]
