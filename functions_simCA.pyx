@@ -35,7 +35,7 @@ def integrand2(double z, double alpha, double beta, double gamma):
 	res = integral1(z*gamma,alpha,beta)
 	return result * res
 
-def integral2(double alpha, double beta, double gamma):
+def integral2(double gamma, double beta, double alpha):
 	return quad(integrand2,1.,+np.inf,args=(alpha,beta,gamma),epsabs=1.e-2,epsrel=1.e-2)[0]
 
 ###############################################################################################

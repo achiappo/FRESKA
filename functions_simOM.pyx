@@ -8,8 +8,8 @@ import numpy as np
 ###################################################################################################
 # stellar density profile 
 def nu(double r):
-	return 1./r**0.1/(1+r**2)**2.45 #(used for gamma* = 0.1 , Plum)
-	#return 1./r/(1+r**2)**2 #(used for gamma* = 1 , non-Plum)
+	#return 1./r**0.1/(1+r**2)**2.45 #(used for gamma* = 0.1 , Plum)
+	return 1./r/(1+r**2)**2 #(used for gamma* = 1 , non-Plum)
 
 ###############################################################################################
 # Mass of cusped NFW DMH
