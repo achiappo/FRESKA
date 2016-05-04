@@ -14,21 +14,20 @@ DATA INPUT
 Data should be input into the code as a three-columns datafile consisting of
 
 1) the distance of a star from the dSphs center projected onto the sky (in units of kpc)
-
 2) measured line-of-sight velocity of each star (in units of km/s)
-
 3) measurement error on the line-of-sight velocity in (in units of km/s)
 
+Alternatvely, the user can customize the data input by modifying the function *get_data(gal)* contained in functions.pyx 
 -------------------------------------------------------------------------------------------------------------------------------
 
 DATA OUTPUT
 The code produces two files:
 
-a) "Like.npy" consists of the 2D, vertically stacked array of the profile likelihood components of the dSphs J factor. Its extension means that it is a python numpy-saved objected, thus loadable with the command np.load("path/to/file/Like.npy").
+a) "Like.npy" consists of the 2D, vertically stacked array of the profile likelihood components of the dSphs J factor. Its extension means that it is a python numpy-saved objected, thus loadable with the command np.load inside a python script.
 J is given in log10 basis and has units of Gev^2/cm^5. 
 
-b) "results.yaml" contains a (binary) python dictionary with the results of the statistical analysis on the profile
-  Likelihood curve. These consist of: its minimum (corresponfing to the Maximum Likelihood J value); the edges of the 1,2 and    3sigma confidence intervals of the minimum; the velocity anisotropy scale parameter.
+b) "results.yaml" contains a python dictionary with the results of the statistical analysis on the profile
+  Likelihood curve. These consist of: its minimum (corresponfing to the Maximum Likelihood J value); the edges of the 1,2 and 3sigma confidence intervals of the minimum; the velocity anisotropy parameter (r_a in the Osipkov-Merrit case, b in the Charbonnier case) 
 
 In order to visualize the likelihood curve, we include a Python plotting script called "plot.py"
 
