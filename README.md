@@ -18,6 +18,7 @@ Data should be input into the code as a three-columns datafile consisting of
 3) measurement error on the line-of-sight velocity in (in units of km/s)
 
 Alternatvely, the user can customize the data input by modifying the function *get_data(gal)* contained in functions.pyx 
+
 -------------------------------------------------------------------------------------------------------------------------------
 
 DATA OUTPUT
