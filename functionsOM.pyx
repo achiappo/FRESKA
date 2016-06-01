@@ -6,7 +6,6 @@ import numpy as np
 #									FUNCTIONS DEFINITIONS
 ################################################################################################################
 # extract data from data files
-
 def get_data(gal):
 	# Read the parameter from the input file
 	data = open('../data/params/params_%s.dat'%gal,'r').readlines()
@@ -30,12 +29,12 @@ def nu(double r):
 def get_M_NFW(double x):
 	return np.log(1.+x)-x/(1.+x)
 
-###############################################################################################
+#######################################################################################################
 # Osipkov-Merritt velocity anisotropy profile
 def beta(double z, double gamma, double delta):
 	return 1./(1.+delta**2/gamma**2/z**2)
 
-###############################################################################################
+#######################################################################################################
 # numerical integrals in sigma_los
 
 def integrand1(double y, double delta, double alpha):
@@ -77,5 +76,5 @@ def Jfactor(double D, double rt, double r0, double rho0, double tmax):
 	rtprime=rt/r0
 	Msun2kpc5_GeVcm5 = 4463954.894661358
 	cst = 4*pi*rho0**2*r0*Msun2kpc5_GeVcm5
-	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin))
+	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin), opts=[{'limit':1000},{'limit':1000}])
 	return cst*res[0]

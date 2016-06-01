@@ -8,7 +8,7 @@ import numpy as np
 # extract data from data files
 def get_data(gal):
 	# Read the parameter from the input file
-	data = open('data/params/params_%s.dat'%gal,'r').readlines()
+	data = open('../data/params/params_%s.dat'%gal,'r').readlines()
 	parameters = []
 	for line in data:
 		parameters.append(line[:-1])
@@ -16,7 +16,7 @@ def get_data(gal):
 	rh = float(parameters[2])
 	rt = float(parameters[3])
 
-	x,v,dv = np.loadtxt('data/velocities/velocities_%s.dat'%gal,dtype=float,usecols=(0,1,2),unpack=True)
+	x,v,dv = np.loadtxt('../data/velocities/velocities_%s.dat'%gal,dtype=float,usecols=(0,1,2),unpack=True)
 	return x,v,dv,D,rh,rt
 
 #######################################################################################################
@@ -50,10 +50,10 @@ def integral2(double gamma, double beta, double alpha):
 # jfactor evaluation functions
 
 def func(double u, double y, double D, double rt, double ymin):
-	return (1.+u)**(-4)/u/sqrt(u*u-D**2*(1-y*y))	# for Cusped NFW
+	return 1./(1.+u)**4/u/sqrt(u*u-D**2*(1.-y*y))	# for Cusped NFW
 
 def lim_u(double y, double D, double rt, double ymin):
-	return [D*sqrt(1-y*y), rt]
+	return [D*sqrt(1.-y*y), rt]
 
 def lim_y(double D, double rt, double ymin):
 	return [ymin,1.]
@@ -71,6 +71,5 @@ def Jfactor(double D, double rt, double r0, double rho0, double tmax):
 	rtprime=rt/r0
 	Msun2kpc5_GeVcm5 = 4463954.894661358
 	cst = 4*pi*rho0**2*r0*Msun2kpc5_GeVcm5
-	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin))
+	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin), opts=[{'limit':1000},{'limit':1000}])
 	return cst*res[0]
-

@@ -1,11 +1,10 @@
-from __future__ import division
 from scipy.integrate import quad,nquad
-from math import sqrt,cos, log, pi
+from math import sqrt, cos, log, pi
 import numpy as np
 
-###################################################################################################
-#					FUNCTIONS DEFINITIONS
-###################################################################################################
+################################################################################################################
+#									FUNCTIONS DEFINITIONS
+################################################################################################################
 # extract data from data files
 def get_data(gal):
 	# Read the parameter from the input file
@@ -23,18 +22,14 @@ def get_data(gal):
 #######################################################################################################
 # stellar density profile
 def nu(double r):
-	return (1+(r/rh)**2)**(-5./2.)
+	return (1+r**2)**(-5./2.)
 
-# dwarf surface brightness profile
-def I( double R, double rh):
-	return 4./3. * rh/(1+(R/rh)**2)**2
-
-##########################################################################
+#######################################################################################################
 # Mass of cusped NFW DMH
 def get_M_NFW(double x):
 	return np.log(1.+x)-x/(1.+x)
 
-##########################################################################
+#######################################################################################################
 # numerical integrals in sigma_los
 
 def integrand1(double y, double alpha):
@@ -55,10 +50,10 @@ def integral2(double gamma, double alpha):
 # jfactor evaluation functions
 
 def func(double u, double y, double D, double rt, double ymin):
-	return 1./(1.+u)**4/u/sqrt(u*u-D**2*(1-y*y))
+	return 1./(1.+u)**4/u/sqrt(u*u-D**2*(1.-y*y))	# for Cusped NFW
 
 def lim_u(double y, double D, double rt, double ymin):
-	return [D*sqrt(1-y*y), rt]
+	return [D*sqrt(1.-y*y), rt]
 
 def lim_y(double D, double rt, double ymin):
 	return [ymin,1.]
@@ -76,5 +71,5 @@ def Jfactor(double D, double rt, double r0, double rho0, double tmax):
 	rtprime=rt/r0
 	Msun2kpc5_GeVcm5 = 4463954.894661358
 	cst = 4*pi*rho0**2*r0*Msun2kpc5_GeVcm5
-	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin))
+	res = nquad(func, ranges=[lim_u, lim_y], args=(Dprime,rtprime,ymin), opts=[{'limit':1000},{'limit':1000}])
 	return cst*res[0]
