@@ -1,0 +1,106 @@
+##################################################################################################
+#										PARAMETERS INPUT
+##################################################################################################
+# dark matter distribution section
+
+# Select dark matter density profile to adopt 
+# options: Zhao, Burkert, Einasto
+#*************************
+'DM_prof': Einasto
+#*************************
+
+# dark matter profile parameters
+'Zhao_aDM' :
+ 'val' : 1
+ 'free' : True
+'Zhao_bDM' :
+ 'val' : 1
+ 'free' : True
+'Zhao_cDM' :
+ 'val' : 3
+ 'free' : True
+'Einasto_alpha' :
+ 'val' : 1
+ 'free' : True
+
+##################################################################################################
+# Stellar distribution section
+
+# Choose between providing either
+# 1) generalised stellar density profile (Hernquist 1990) and its shape parameters (Hernquist) 
+# 2) surface brightness profile (surf_bright)
+#*************************
+'stellar' : surf_bright
+#*************************
+
+# 1) stellar density profile parameters
+'Hernquist_rh' :
+ 'val' : 1
+ 'free' : True
+
+'Hernquist_aST' :
+ 'val' : 2
+ 'free' : True
+
+'Hernquist_bST' :
+ 'val' : 5
+ 'free' : False
+
+'Hernquist_cST' :
+ 'val' : 0
+ 'free' : False
+
+# 2) Select surface brightness profile to adopt
+# options: Plummer, exponential, King, Sersic
+#*************************
+'I_prof' : Sersic
+#*************************
+
+# Surface brightness parameters
+# Plummer profile: enter half-light radius
+'Plummer_rh' :
+ 'val' : 1
+ 'free' : True
+
+# exponential profile: enter exponential scale radius
+'exponential_rc' :
+ 'val' : 1
+ 'free' : True
+
+# King profile: enter core radius and/or maximum radius
+'King_rc' :
+ 'val' : 1
+ 'free' : True
+
+'King_rlim' :
+ 'val' : 2
+ 'free' : False
+
+# Sersic profile: enter scale radius and/or logarithmic decrease sharpness parameter
+'Sersic_rc' :
+ 'val' : 1
+ 'free' : True
+
+'Sersic_n' :
+ 'val' : 4
+ 'free' : False
+
+##################################################################################################
+# Velocity anisotropy section:
+
+# Select a velocity anisotropy profile
+# options: Isotropic (IS), Radial (RD), Constant-beta (CA), Osipkov-Merritt (OM)
+#*************************
+'anisotropy' : CA
+#*************************
+
+# stellar anisotropy parameters
+# enter beta for costant anisotropy profile
+'CA_beta' :
+ 'val' : -1
+ 'free' : True
+
+# enter scale radius for Osipkov-Merritt profile (Osipkov 1979; Merritt 1985)
+'OM_ra' :
+ 'val' : 1
+ 'free' : True
