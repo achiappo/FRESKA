@@ -6,7 +6,7 @@
 # Select dark matter density profile to adopt 
 # options: Zhao, Burkert, Einasto
 #*************************
-'DM_prof': Einasto
+'DM_prof': Zhao
 #*************************
 
 # dark matter profile parameters
@@ -28,9 +28,9 @@
 
 # Choose between providing either
 # 1) generalised stellar density profile (Hernquist 1990) and its shape parameters (Hernquist) 
-# 2) surface brightness profile (surf_bright)
+# 2) surface brightness profile (surface_bright)
 #*************************
-'stellar' : surf_bright
+'stellar' : Hernquist
 #*************************
 
 # 1) stellar density profile parameters
@@ -91,7 +91,7 @@
 # Select a velocity anisotropy profile
 # options: Isotropic (IS), Radial (RD), Constant-beta (CA), Osipkov-Merritt (OM)
 #*************************
-'anisotropy' : CA
+'anisotropy' : OM
 #*************************
 
 # stellar anisotropy parameters
