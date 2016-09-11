@@ -19,17 +19,21 @@ args = parser.parse_args()
 config = yaml.load(args.base_config)
 config.update(yaml.load(args.config))
 
-# constructing 'setting' dictionary for Minuit
 err = 0.01
 Minuit_setting = {}
-fitting_params = []
-for var in config:
-    try:
-    	if config[var]['free']==True: 
-            Minuit_setting.update({var:config[var]['val'],'error_%s'%var:err})
-            fitting_params.append(var)
-    except: pass
-#
+fitting_params = {}
+for prof in config:
+    if config[prof]['use']:
+        for var in config[prof]: # add instrution to neglect element from dictionary (to remove need for try-except)
+            try:
+                if config[prof][var]['free']:
+                    Minuit_setting.update({var:config[prof][var]['val'],
+                    	'error_%s'%var:err})
+                    fitting_params.update({var:config[prof][var]['val']})
+                else:
+                    Minuit_setting.update({var:config[prof][var]['val'],
+                    	'fixed_%s'%var:True})
+            except: pass
 
 R,v,dv = np.load('input.npy')
 u=v.mean()
@@ -46,8 +50,8 @@ class logLike:
         system('python setup.py build_ext --inplace')
 
         
-    def retrieve(self, *fitting_params):
-        if (r0, ra, beta) in self.cache.keys():
+    def retrieve(self, fitting_params):
+        if all(fitting_params) in self.cache.keys():
             I=self.cache[*fitting_params]
             iscached=True
         else:
@@ -55,21 +59,32 @@ class logLike:
             iscached=False
         return iscached, I
     
-    def store(self, I, *fitting_params):
-        self.cache[*fitting_params]=I
+    def store(self, I, fitting_params):
+        self.cache[fitting_params]=I
         return
 
     def pool_compute(self, alpha, delta, beta):
         pool = Pool(processes=self.numprocs)
-        results = pool.map(proxy_integral2, itertools.izip(self.data, itertools.repeat(alpha), itertools.repeat(delta), itertools.repeat(beta)))
+        results = pool.map(proxy_integral2, 
+        					itertools.izip(self.data, 
+        				   	itertools.repeat(alpha), 
+        				   	itertools.repeat(delta), 
+        				   	itertools.repeat(beta)))
         pool.close()
         pool.join()
         return results
     
-    def compute(self, J, *fitting_params):
+    def compute(self, J, r0, fitting_params):
         #treat r0 first, as it can't be vectorized
+        if 'ra' in fitting_params.keys():
+        	delta = ra/
         r0=10**r0
         ra=10**ra
+        alpha = rh / r0
+        delta = ra / rh
+        gamma = self.data / rh
+        params = [ alpha , delta, beta]
+
         if r0<=0 or ra<=0:
             if np.isscalar(J):
                 return np.nan
@@ -87,7 +102,7 @@ class logLike:
             else:
                 if self.numprocs==1 or self.data.size<100:
                     #I_array = compute_I_array(self.data, rh/r0)
-                    I_array = np.array([integral2(gamma, ra/rh, rh/r0) for gamma in self.data])
+                    I_array = np.array([integral2(gamma, params, ) for gamma in self.data])
                 else:
                     I_array = self.pool_compute(ra/rh, rh/r0)
                 I = r0**3*I_array*np.power(10,J/2.)/np.sqrt(Jfactor(D,np.inf,r0,1.,theta))

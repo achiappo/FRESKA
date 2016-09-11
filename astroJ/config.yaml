@@ -1,0 +1,130 @@
+##############################################################################
+#							PARAMETERS INPUT
+##############################################################################
+# Select a dark matter density profile to adopt.
+# Choices: Zhao, Burkert, Einasto
+# To select a profile, set the corresponding 'use' variable to 'True'
+
+'Zhao' :
+ 'use' : True
+
+ 'aDM' :
+  'val' : 1
+  'free' : False
+
+ 'bDM' :
+  'val' : 1
+  'free' : False
+
+ 'cDM' :
+  'val' : 3
+  'free' : True
+
+'Burkert' :
+ 'use' : False
+
+'Einasto' :
+ 'use' : False
+
+ 'alpha' :
+  'val' : 1
+  'free' : True
+
+##############################################################################
+# Choose between either providing a generalised stellar distribution profile 
+# (Hernquist 1990) or a surface brightness profile - choices: 
+# Plummer (Plummer 1911), exponential, King (King 1965) or Sersic. 
+# In the former (latter) case, the surface brightness (stellar velocity) 
+# will be evaluated via an inverse (direct) Abel transform.
+
+'Hernquist' :
+ 'use' : True
+
+ 'rh' :
+  'val' : 1
+  'free' : True
+
+ 'aST' :
+  'val' : 2
+  'free' : False
+
+ 'bST' :
+  'val' : 5
+  'free' : False
+
+ 'cST' :
+  'val' : 0
+  'free' : False
+
+# Plummer profile
+'Plummer' :
+ 'use' : False
+
+ # enter the half-light radius
+ 'rh' :
+  'val' : 1
+  'free' : True
+
+# exponential profile
+'exponential' :
+ 'use' : False
+
+ # enter the exponential scale radius
+ 'rc' :
+  'val' : 1
+  'free' : True
+
+# King profile
+'King' :
+ 'use' : False
+
+ # enter the core radius 
+ 'rc' :
+  'val' : 1
+  'free' : True
+ # enter the maximum radius
+ 'rlim' :
+  'val' : 2
+  'free' : False
+
+# Sersic profile
+'Sersic' :
+ 'use' : False
+
+ # enter the scale radius
+ 'rc' :
+  'val' : 1
+  'free' : True
+ # enter the logarithmic decrease sharpness parameter
+ 'n' :
+  'val' : 4
+  'free' : False
+
+##############################################################################
+# Select a velocity anisotropy profile.
+
+# Isotropic velocity profile
+'IS' :
+ 'use' : False
+
+# Radial velocity profile
+'RD' :
+ 'use' : False
+
+# Constant beta velocity profile
+'CA' :
+ 'use' : True
+
+ # enter the anisotropy parameter beta
+ 'beta' :
+  'val' : -1
+  'free' : True
+
+# Osipkov-Merritt profile (Osipkov 1979; Merritt 1985)
+'OM' :
+ 'use' : False
+
+ # enter the scale radius
+ 'ra' :
+  'val' : 1
+  'free' : True

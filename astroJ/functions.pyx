@@ -7,7 +7,7 @@ from scipy.integrate import quad,nquad
 from scipy.special import betainc, kn, hyp2f1, gammainc
 cimport numpy as np
 
-params = yaml.load(open('default.yaml'))
+params = yaml.load(open('config.yaml'))
 
 ##############################################################################
 ##############################################################################
@@ -38,7 +38,7 @@ def get_data(str gal):
 ##############################################################################
 # Dark Matter density profile definition
 
-if params['DM_prof'] == 'Zhao' :
+if params['Zhao']['use']:
 
 	def rho(double x, tuple DM_params):
 		"""Zhao profile for the dark matter distribution (x := r/r_s)"""
@@ -56,7 +56,7 @@ if params['DM_prof'] == 'Zhao' :
 		return x**(3.-aDM) * hyp2f1(hypa, hypb, hypc, -x**bDM)
 
 	#----------------------------------------------------------------------
-elif params['DM_prof']=='Zhao':
+elif params['Burkert']['use']:
 
 	def rho(double x, tuple DM_params):
 		"""Burkert profile for the dark matter distribution (x := r/r_s)"""
@@ -69,7 +69,7 @@ elif params['DM_prof']=='Zhao':
 		return (log(1 + x**2) + 2*log(1. + x) - 2*atan(x))/4.
 
 	#----------------------------------------------------------------------
-elif params['DM_prof']=='Einasto':
+elif params['Einasto']['use']:
 
 	def rho(double x, tuple DM_params):
 		"""Einasto profile for the dark matter distribution (x := r/r_2)"""
@@ -88,7 +88,7 @@ elif params['DM_prof']=='Einasto':
 ##############################################################################
 # Stellar density profile and surface brightness definitions
 
-if params['stellar']=='Hernquist':
+if params['Hernquist']['use']:
 
 	def nu(double y, tuple ST_params):
 		"""Hernquist profile for stellar density distribution"""
@@ -108,80 +108,80 @@ if params['stellar']=='Hernquist':
 		return quad(integrand_I, R, +np.inf, args=(R, ST_params))[0]
 
 	#----------------------------------------------------------------------
-elif params['stellar']=='surface_bright':
+elif params['Plummer']['use']:
 	
-	if params['I_prof']=='Plummer':
+	def I(double gamma, tuple ST_params):
+		"""Plummer profile for dSphs surface brightness"""	
 
-		def I(double gamma, tuple ST_params):
-			"""Plummer profile for dSphs surface brightness"""
-			rST = ST_params
-			return 4.*rST/3./pi/(1. + gamma**2)**2
+		rST = ST_params
+		return 4.*rST/3./pi/(1. + gamma**2)**2
 
-		def nu(double r, tuple ST_params):
-			"""Stellar density obtained from the inverse 
-				Abel transform of Plummer profile"""
-		
-			return 1. / (1.+r**2)**2.5
+	def nu(double r, tuple ST_params):
+		"""Stellar density obtained from the inverse 
+			Abel transform of Plummer profile"""
 
-	#----------------------------------------------------------------------
-	elif params['I_prof']=='exponential':
-
-		def I(double gamma, tuple ST_params):
-			"""exponential profile for dSphs surface brightness"""
-			return exp(-gamma)
-
-		def nu(double y, tuple ST_params):
-			"""stellar density obtained from the inverse 
-				Abel transform of exponential profile"""
-
-			r_c = ST_params
-			return kn(0, y) / r_c
+		return 1. / (1.+r**2)**2.5
 
 	#----------------------------------------------------------------------
-	elif params['I_prof']=='King':
+elif params['exponential']['use']:
 
-		def I(double gamma, tuple ST_params):
-			"""King profile for dSphs surface brightness"""
+	def I(double gamma, tuple ST_params):
+		"""exponential profile for dSphs surface brightness"""
+
+		return exp(-gamma)
+
+	def nu(double y, tuple ST_params):
+		"""stellar density obtained from the inverse 
+			Abel transform of exponential profile"""
+
+		r_c = ST_params
+		return kn(0, y) / r_c
+
+	#----------------------------------------------------------------------
+elif params['King']['use']:
+
+	def I(double gamma, tuple ST_params):
+		"""King profile for dSphs surface brightness"""
 			
-			r_c, r_lim = ST_params
-			term1 = 1./np.sqrt(1. + gamma**2) 
-			term2 = 1./np.sqrt(1. + r_lim**2/r_c**2)
-			return  term1 - term2
+		r_c, r_lim = ST_params
+		term1 = 1./np.sqrt(1. + gamma**2) 
+		term2 = 1./np.sqrt(1. + r_lim**2/r_c**2)
+		return  term1 - term2
 
-		def nu(double y, tuple ST_params):
-			"""Stellar density obtained from the inverse 
-				Abel transform of King profile"""
+	def nu(double y, tuple ST_params):
+		"""Stellar density obtained from the inverse 
+			Abel transform of King profile"""
 
-			r_c, r_lim = ST_params
-			return 1./(1. + y**2)/r_c
+		r_c, r_lim = ST_params
+		return 1./(1. + y**2)/r_c
 
 	#----------------------------------------------------------------------
-	elif params['I_prof']=='Sersic':
+elif params['Sersic']['use']:
 
-		def I(double gamma, tuple ST_params):
-			"""Sersic profile for dSphs surface brightness"""
+	def I(double gamma, tuple ST_params):
+		"""Sersic profile for dSphs surface brightness"""
 
-			n, r_c = ST_params
-			bn = 2*n - 1/3. + 0.009876/n
-			return exp(-bn*(gamma**(1./n) - 1))
+		n, r_c = ST_params
+		bn = 2*n - 1/3. + 0.009876/n
+		return exp(-bn*(gamma**(1./n) - 1))
 
-		def integrand_nu(double z, double n, double y):
-			return exp(-bn*z)/z**n/sqrt(1. - y**2/z**(2*n))
+	def integrand_nu(double z, double n, double y):
+		return exp(-bn*z)/z**n/sqrt(1. - y**2/z**(2*n))
 
-		def nu(double y, tuple ST_params):
-			"""stellar density obtained from the inverse 
-				Abel transform of Sersic profile"""
+	def nu(double y, tuple ST_params):
+		""" Stellar density obtained from the inverse 
+			Abel transform of Sersic profile"""
 
-			n, r_c = ST_params
-			bn = 2*n - 1./3. + 0.009876/n
-			intgrl = quad(integrand_nu, y**(1./n), +np.inf, args=(n, y))
-			return bn*exp(bn)*intgrl/r_c
+		n, r_c = ST_params
+		bn = 2*n - 1./3. + 0.009876/n
+		intgrl = quad(integrand_nu, y**(1./n), +np.inf, args=(n, y))
+		return bn*exp(bn)*intgrl/r_c
 
 ##############################################################################
 ##############################################################################
 # Stellar velocity anisotropy profile definition
 
-if params['anisotropy']=='IS':
+if params['IS']['use']:
 
 	def kernel(double u, double w, double beta):
 		"""Kernel function for isotropic velocity distribution"""
@@ -189,7 +189,7 @@ if params['anisotropy']=='IS':
 		return np.sqrt(1. - 1./u)
 
 #----------------------------------------------------------------------------
-if params['anisotropy']=='RD':
+if params['RD']['use']:
 
 	def kernel(double u, double w, double beta):
 		"""Kernel function for radially isotropic velocity distribution"""
@@ -200,7 +200,7 @@ if params['anisotropy']=='RD':
 		return term1 - term2 - term3
 
 #----------------------------------------------------------------------------
-if params['anisotropy']=='CA':
+if params['CA']['use']:
 
 	def kernel(double u, double w, double beta):
 		"""Kernel function for constant anisotropy velocity distribution"""
@@ -211,7 +211,7 @@ if params['anisotropy']=='CA':
 		return 0.5*u**(2*beta - 1.)*(term1 + term2 - term3)
 
 #----------------------------------------------------------------------------
-if params['anisotropy']=='OM':
+if params['OM']['use']:
 
 	def kernel(double u, double w, double beta):
 		"""Kernel function for Osipkov-Merritt velocity distribution"""
