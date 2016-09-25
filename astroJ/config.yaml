@@ -1,130 +1,127 @@
 ##############################################################################
 #							PARAMETERS INPUT
 ##############################################################################
+# Input data: insert the path to the data file and the parameters file
+
+'Input' :
+
+ 'data' : 'path/to/velocities/data/file'
+
+ 'parameters' : 'path/to/parameters/file'
+
+##############################################################################
+# Choose whethere to cythonise the function module or not
+
+'cythonise' : True
+
+##############################################################################
+# Select the Likelihood to adopt in the fitting.
+# Choices: binned or unbinned Gaussian Likelihood
+
+'Likelihood' : 'unbinned'
+
+##############################################################################
 # Select a dark matter density profile to adopt.
 # Choices: Zhao, Burkert, Einasto
-# To select a profile, set the corresponding 'use' variable to 'True'
 
-'Zhao' :
- 'use' : True
+'DM_profile' :
 
- 'aDM' :
-  'val' : 1
-  'free' : False
+ 'profile'  : 'Zhao'
 
- 'bDM' :
-  'val' : 1
-  'free' : False
+ 'aDM' 	 :
+  'value' : 1
+  'free'  : False
 
- 'cDM' :
-  'val' : 3
-  'free' : True
+ 'bDM' 	 :
+  'value' : 1
+  'free'  : False
 
-'Burkert' :
- 'use' : False
-
-'Einasto' :
- 'use' : False
+ 'cDM' 	 :
+  'value' : 3
+  'free'  : True
 
  'alpha' :
-  'val' : 1
-  'free' : True
+  'value' : 0.17
+  'free'  : False
 
 ##############################################################################
 # Choose between either providing a generalised stellar distribution profile 
 # (Hernquist 1990) or a surface brightness profile - choices: 
 # Plummer (Plummer 1911), exponential, King (King 1965) or Sersic. 
 # In the former (latter) case, the surface brightness (stellar velocity) 
-# will be evaluated via an inverse (direct) Abel transform.
+# will be evalueuated via an inverse (direct) Abel transform.
 
 'Hernquist' :
+
  'use' : True
 
- 'rh' :
-  'val' : 1
-  'free' : True
+ 'rh'  :
+  'valueue' : 1
+  'free'  : True
 
  'aST' :
-  'val' : 2
-  'free' : False
+  'value' : 2
+  'free'  : False
 
  'bST' :
-  'val' : 5
-  'free' : False
+  'value' : 5
+  'free'  : False
 
  'cST' :
-  'val' : 0
-  'free' : False
+  'value' : 0
+  'free'  : False
 
-# Plummer profile
-'Plummer' :
- 'use' : False
+'surface_brightness' :
 
- # enter the half-light radius
- 'rh' :
-  'val' : 1
-  'free' : True
+ 'profile': 'Plummer'
 
-# exponential profile
-'exponential' :
- 'use' : False
+  # Plummer profile
+  # enter the half-light radius
+  'rh' :
+   'value' : 1
+   'free'  : True
 
- # enter the exponential scale radius
- 'rc' :
-  'val' : 1
-  'free' : True
+  # enter the exponential scale radius
+  'rc' :
+   'value' : 1
+   'free'  : True
 
-# King profile
-'King' :
- 'use' : False
+  # King profile
+  # enter the core radius
+  'rc' :
+   'value' : 1
+   'free'  : True
+  # enter the maximum radius
+  'rlim' :
+   'value' : 2
+   'free'  : False
 
- # enter the core radius 
- 'rc' :
-  'val' : 1
-  'free' : True
- # enter the maximum radius
- 'rlim' :
-  'val' : 2
-  'free' : False
-
-# Sersic profile
-'Sersic' :
- 'use' : False
-
- # enter the scale radius
- 'rc' :
-  'val' : 1
-  'free' : True
- # enter the logarithmic decrease sharpness parameter
- 'n' :
-  'val' : 4
-  'free' : False
+  # Sersic profile
+  # enter the scale radius
+  'rc' :
+   'value' : 1
+   'free'  : True
+  # enter the logarithmic decrease sharpness parameter
+  'n' :
+   'value' : 4
+   'free'  : False
 
 ##############################################################################
 # Select a velocity anisotropy profile.
 
 # Isotropic velocity profile
-'IS' :
- 'use' : False
+'Anisotropy' :
 
-# Radial velocity profile
-'RD' :
- 'use' : False
+ 'profile' : 'IS'
 
-# Constant beta velocity profile
-'CA' :
- 'use' : True
-
+ # Constant beta velocity profile
  # enter the anisotropy parameter beta
  'beta' :
-  'val' : -1
-  'free' : True
+  'value' : -1
+  'free'  : True
 
-# Osipkov-Merritt profile (Osipkov 1979; Merritt 1985)
-'OM' :
- 'use' : False
-
+ # Osipkov-Merritt profile (Osipkov 1979; Merritt 1985)
  # enter the scale radius
  'ra' :
-  'val' : 1
-  'free' : True
+  'value' : 1
+  'free'  : True

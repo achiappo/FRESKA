@@ -15,7 +15,7 @@ fitting_params = {}
 for profile_key,profile_dic in config.items():
     if profile_dic['use']:
         for variable_key,variable_dic in profile_dic.items():
-            if variable_key not in ['use']:
+            if variable_key != 'use':
                 if variable_dic['free']:
                     Minuit_setting.update({variable_key:variable_dic['val'],
                     					   'error_%s'%variable_key:err})
