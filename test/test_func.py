@@ -24,7 +24,7 @@ class Like(object):
 		S = Sigma(self.profiles, params)
 		I = ConfigStellar(self.profiles, params)
 		S_arr = np.array([S(g, alpha)/I.surface_brightness(R) 
-			for g,R in zip(gamma,self.R)])
+						  for g,R in zip(gamma,self.R)])
 		term1 = (self.v-self.v.mean())**2 / (self.dv**2+S_arr)
 		term2 = nl.log(self.dv**2+S_arr)
 		return 0.5*(term1+term2).sum()
