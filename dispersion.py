@@ -1,4 +1,5 @@
 import numpy as np
+from profiles import DMProfile, StellarProfile, AnisotropyKernel
 
 class SphericalJeansDispersion(object):
     def __init__(self, dm, stellar, anisotropy,**kwargs):
@@ -10,36 +11,37 @@ class SphericalJeansDispersion(object):
             self.stellar = stellar
         elif isinstance(stellar, str):
             self.stellar = build_profile(stellar,**kwargs)
-        if isinstance(anisotropy, anisotropy_kernel):
-            self.kernel = anisotropy_kernel(anisotropy)
+        if isinstance(anisotropy, AnisotropyKernel):
+            self.kernel = anisotropy
         elif isinstance(anisotropy, str):
             self.kernel = build_kernel(anisotropy,**kwargs)
         G=4.3e-6
         self.cst = 8.*np.pi*G
+        self.params = {}
         self.synch()
         
     def synch(self):
         for par in self.dm.params:
-            self.params[par]=self.dm.__dict__[par]
+            self.params['dm_'+par]=self.dm.__dict__[par]
         for par in self.stellar.params:
-            self.params[par]=self.stellar.__dict__[par]
+            self.params['st_'+par]=self.stellar.__dict__[par]
         for par in self.kernel.params:
-            self.params[par]=self.kernel.__dict__[par]
+            self.params['ker_'+par]=self.kernel.__dict__[par]
     
-    def separams(self, name, value):
-        if name in self.dm.__dict__:
-            setattr(self.dm, name, value)
-        if name in self.stellar.__dict__:
-            setattr(self.stellar, name, value)
-        if name in self.kernel.__dict__:
-            setattr(self.kernel, name, value)
+    def setparams(self, name, value):
+        if name.strip('dm_') in self.dm.__dict__:
+            setattr(self.dm, name.strip('dm_'), value)
+        if name.strip('st_') in self.stellar.__dict__:
+            setattr(self.stellar, name.strip('st_'), value)
+        if name.strip('ker_') in self.kernel.__dict__:
+            setattr(self.kernel, name.strip('ker_'), value)
         self.synch()
         
-    def integrand(self, s, **kwargs):
+    def integrand(self, s, R):
         #not correct : R could be provided which is not in inital self.R
         #this is weak anyway, why are r0 and rh singled out parameters?
         r0 = kwargs['r0'] if 'r0' in kwargs else self.dm.r0
-        r0 = kwargs['rh'] if 'rh' in kwargs else self.stellar.rh
+        rh = kwargs['rh'] if 'rh' in kwargs else self.stellar.rh
         val = self.stellar.density(s/rh) * self.dm.mass(s/r0) * self.kernel(s/R) / s
         return val
 
@@ -47,21 +49,22 @@ class SphericalJeansDispersion(object):
         #called by a LogLike object
         if np.isscalar(R):
             integral, error = quad(self.integrand, R, np.inf, args=(R,))
-            sigma2 = integral / stellar_profile.surface_brightness(R) / np.sqrt(Jreduced) 
+            sigma2 = integral / self.stellar_profile.surface_brightness(R) / np.sqrt(self.dm.Jreduced) 
         else:
             sigma2=np.zeros_like(R)
             for i,rr in enumerate(R):
                 integral, error = quad(self.integrand, rr, np.inf, args=(rr,))
-                I_of_R = stellar_profile.surface_brightness(rr)
-                sigma2[i] =  integral / I_of_R / np.sqrt(Jreduced)
-        return sigma2 * r0**3 *self.cst * np.sqrt(self.J)
+                I_of_R = self.stellar_profile.surface_brightness(rr)
+                sigma2[i] =  integral / I_of_R / np.sqrt(self.dm.Jreduced)
+        return sigma2 * r0**3 *self.cst * np.power(10,self.J/2.)
         
 
-###################################################
+##############################################################################
 class IsoSphSigmaLOS():
     def __init__(self,**kwargs):
         self.__dict__ = kwargs
-        self.cst = cst = 8.*np.pi*4.3e-6
+        self.cst = 8.*np.pi*4.3e-6
+
     def Kernel(self, u):
         return np.sqrt(1. - 1./u**2)
 

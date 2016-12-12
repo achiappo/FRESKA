@@ -1,10 +1,10 @@
 from exceptions import Exception, ValueError
 from scipy.special import betainc, kn, hyp2f1, gammainc
 from scipy import integrate as sciint
-from math import cos
+from math import cos, atan, sqrt
 import numpy as np
 
-#################################################################"
+##############################################################################
 # inverse hyperbolic cosecant (used for gamma* = 1 , non-Plum)
 def inv_csch(x):
     return np.log(np.sqrt(1+x**-2.)+x**-1.)
@@ -16,7 +16,7 @@ def plummer1_func(x) :
 def zhao_func(x, a, b, c):
     return 1. / x**c / (1.+x**a)**((b-c) / a)
 
-#################################################################"
+##############################################################################
 
 class Profile(object):
     """
@@ -34,8 +34,8 @@ class StellarProfile(Profile):
     Define a stellar profile, for which the 2 universal parameters are
     - rh : scale radius
     - rhoh : scale density, at scale radius
-    This is still a base class, but it implements the Abel transform for the surface
-    brightness computation, as a default for inherited classes.
+    This is still a base class, but it implements the Abel transform for the 
+    surface brightness computation, as a default for inherited classes.
     """
     def __init__(self, **kwargs):
         """
@@ -48,7 +48,8 @@ class StellarProfile(Profile):
 
     def surface_brightness(self, *args, **kwargs):
         """
-        Compute the surface brightness from the density, using the Abel transform
+        Compute the surface brightness from the density, 
+        using the Abel transform
         """
         R=kwargs['R']
         rh=kwargs['rh']
@@ -64,8 +65,8 @@ class StellarProfile(Profile):
         
 class genPlummerProfile(StellarProfile):
     """
-    Generalized Plummer stellar profile, where the exponent of the central slope 
-    can be different from 0, the standard Plummer profile's value.
+    Generalized Plummer stellar profile, where the exponent of the central
+    slope can be different from 0, the standard Plummer profile's value.
     """
     def __init__(self, **kwargs):
         """
@@ -75,8 +76,9 @@ class genPlummerProfile(StellarProfile):
         """
         super(genPlummerProfile, self).__init__(**kwargs)
         if 'a' in kwargs or 'b' in kwargs:
-            print "exponent parameters a and b are fixed to 2 and 5, \
-            respectively, in generalized Plummer profiles. Use Zhao profiles instead."
+            print "exponent parameters a and b are fixed to 2 and 5," +\
+            "respectively, in generalized Plummer profiles."+\
+            " Use Zhao profiles instead."
         self.a = 2
         self.b = 5
         if 'c' not in kwargs:
@@ -115,13 +117,17 @@ class DMProfile(Profile):
         if 'rho0' not in kwargs:
             self.rho0=1
         self.params=['r0', 'rho0']
+
     def reducedJ(self, D, theta, rt, with_errs=False):
         """
-        compute the reduced J factor \int_ymin^1 dy \int_0^zmax dx f^2(r(z,y)),
-        where ymin=\cos(\theta_max), z=r/r0-D'y, and the density reads rho(r)=rho0*f(r/r0).
-        zmax = sqrt(r_t'**2-D'^2*(1-y^2)) with r_t'=rt/r0 and D'=D/r0.
-        The usual J factor is recovered by multiplying by 4pi*rho0^2*r0. The reduced J factor is
-        dimensionless
+        compute the reduced J factor \int_ymin^1 dy \int_0^zmax dx f^2(r(z,y))
+        where
+        - ymin=\cos(\theta_max)
+        - z=r/r0-D'y
+        - the density reads rho(r)=rho0*f(r/r0)
+        - zmax = sqrt(r_t'**2-D'^2*(1-y^2)) with r_t'=rt/r0 and D'=D/r0.
+        The usual J factor is recovered by multiplying by 4pi*rho0^2*r0. 
+        The reduced J factor is dimensionless
         """
         r0 = self.r0
         Dprime = D/r0
@@ -156,9 +162,9 @@ class  ZhaoProfile(DMProfile):
         if 'a' not in kwargs:
             self.a = 1
         if 'b' not in kwargs:
-            self.a = 3
+            self.b = 3
         if 'c' not in kwargs:
-            self.a = 1
+            self.c = 1
         self.params+=['a','b','c']
         
     def density(self,x):
@@ -169,30 +175,63 @@ class  ZhaoProfile(DMProfile):
         a, b, c = self.a, self.b, self.c
         return x**(3.-a) * hyp2f1( (3-a)/b, (c-a)/b, (b-a+3.)/b, -x**b )
 
-###########################################################################
+##############################################################################
 #Anisotropy kernels
-class IsotropicKernel(object):
+class AnisotropyKernel(object):
     """
     Mamon-Lokas integral for isotropic kernels
     """
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
-        #isotropic kernel does not take any new parameters
-        self.params ={}
-    def __call__(self, u):
+        self.params = []
+        if self.model == 'constBeta':
+        	#default to constant zero anisotropy
+        	self.beta = 0.
+        	self.params+=['beta']
+        elif self.model == 'OM':
+        	#default to radial anisotropy
+        	self.ra = 0.
+        	self.params+=['ra']
+
+    def __call__(self, u, R, **kwargs):
         """
-        return the isotropic kernel for u=r/R, r is a running radius (the variable in the integrand), 
-        and R is the star radius (data)
+        return the isotropic kernel for u=r/R, r is a running radius 
+        (the variable in the integrand), and R is the star radius (data)
         """
-        mod=self.model
+        mod = self.model
+        # isotropic model kernel function
         if mod == 'iso':
             return sqrt(1.-u**(-2))
+        # radial anisotropy kernel function
+        elif mod == 'rad':
+        	return pi*u/4. - 0.5*np.sqrt(1. - 1./u/u) - u*asin(1./u)/2.
+        # cosntant beta anisotropy kernel function
+        elif mod == 'constBeta':
+        	if 'beta' not in self.params:
+        		self.params=['beta']
+        		self.beta = 0.
+        	beta = self.beta
+        	ker1 = sqrt(1.-1./u/u) / (1.-2.*beta)
+        	ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
+        	ker3 = u**(2*beta-1) * (1.-betainc(1./u/u, beta+0.5, 0.5))
+        	return ker1 + ker2 * ker3
+        # Osipkov-Merrit model kernel function
+        elif mod == 'OM':
+        	if 'ra' not in self.params:
+        		self.params=['ra']
+        		self.ra = 0.
+        	w = self.ra/R
+        	ker1 = (w*w + 0.5)*(u*u + w*w)/u/(w*w + 1.)**1.5
+        	ker2 = atan(np.sqrt((u*u - 1.)/(w*w + 1.)))
+        	ker3 = 0.5/(w*w + 1.)*sqrt(1. - 1./u*u)
+        	return ker1 * ker2 - ker3
 
-###########################################################################
+
+##############################################################################
 #Helper functions
 def build_profile(profile_type, **kwargs):
     if profile_type.upper() == 'PLUMMER':
-        return PlummerProfile(**kwargs)
+        return genPlummerProfile(**kwargs)
     elif profile_type.upper() == 'NFW':
         return ZhaoProfile(a=1, b=3, c=1, **kwargs)
     elif profile_type.upper() == 'ZHAO':
@@ -206,4 +245,4 @@ def build_kernel(kernel_type, **kwargs):
     if kernel_typ.upper()=='ISO':
         return IsotropicKernel(**kwargs)
     else:
-        raise ValueError("Unrecognized type %s"%profile_type)
+        raise ValueError("Unrecognized anisotropy type %s"%profile_type)

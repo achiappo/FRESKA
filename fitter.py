@@ -8,13 +8,13 @@ class MinuitFitter(object):
         self.settings = {'errordef':0.5,'print_level':0,'pedantic':False}
         
     def synch(self):
-        for key,val in self.loglike.free_pars().items():
-            if hasattr(val, '__iter__')
+        for key,val in self.loglike.get_free_pars().items():
+            if hasattr(val, '__iter__'):
                 #make room for future add of boundaries and/or errors
-                self.settings[key]= val[0]
+                self.settings[key]= val.values()[0]
             else:
                 self.settings[key]= val
-        return settings
+        return self.settings
     
     def fit(self, **kwargs):
         settings = self.synch()
@@ -25,13 +25,15 @@ class MinuitFitter(object):
         return fitresult
 
 
-###################################################
+##############################################################################
 class MinuitFitter2(object):
     def __init__(self, fcn):
         self.fcn = fcn
         self.settings = {'errordef':0.5,'print_level':0,'pedantic':False,}
+
     def fit(self):
-        #this does not work, as Minuit will check the signature of the compute function to know the parameters. This would force the compute signature to include all possible parameters for all possible DM stellar and anisotropic parameters, which is untenable.
+        #this does not work, as Minuit will check the signature of the compute function to know the parameters. This would force the 
+        #compute signature to include all possible parameters for all possible DM stellar and anisotropic parameters, which is untenable.
         Jfit = Minuit(lh.compute,**self.settings)
         Jfit.tol = 0.01
         BF = Jfit.migrad()
