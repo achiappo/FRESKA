@@ -15,23 +15,23 @@ def load_data(gal):
     return x,v,dv,D,rh,rt
 
 def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors):
-    # homedir = '/home/cohen/WORK/JFACTOR/ASTROJPY/'
-    # MockSize = 100
-    # dataSize = 1000
-    # dset=1
-    # # enter model choice - cf. casedir (options 1,2,3,4)
-    # mod = 4
+    #homedir = '/home/andrea/Desktop/work/DWARF/jvalue/project1/test/Isotrop_Core_nonPlum'
+    #MockSize = 100
+    #dataSize = 1000
+    #dset=1
+    # enter model choice - cf. casedir (options 1,2,3,4)
+    #mod = 4
 
     with_velocity_errors=True
     
-    data = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_nonPlum
-        '/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_Plum
-        '/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_nonPlum
-        '/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset)]      # Isotrop_Cusp_Plum
-    err  = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_nonPlum
-        '/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_Plum
-        '/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_nonPlum
-        '/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset)]  # Isotrop_Cusp_Plum
+    data = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),			# Isotrop_Core_nonPlum
+        	'/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),			# Isotrop_Core_Plum
+        	'/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),			# Isotrop_Cusp_nonPlum
+        	'/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset)]			# Isotrop_Cusp_Plum
+    err  = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),		# Isotrop_Core_nonPlum
+        	'/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  	# Isotrop_Core_Plum
+        	'/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  	# Isotrop_Cusp_nonPlum
+        	'/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset)]  	# Isotrop_Cusp_Plum
     print 'Using ', homedir+data[mod-1]
     x,y,z,vx,vy,vz = np.loadtxt(homedir+data[mod-1],unpack=True)
     R = np.sqrt(x**2+y**2) # assumed direction of observation along z-axis for simplicity (as suggested on the Gaia wiki)
@@ -50,8 +50,8 @@ def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors):
         idx=np.random.randint(low=dataSize, size=MockSize)
     R,v,dv=R[idx],v[idx],dv[idx]
 
-    rh= 1. if mod == 1 or mod == 2 else 0.25
-    r0_true=1.
-    rho0_true=40.e7 if mod == 1 or mod == 2 else 6.4e7
+    rh = 1. if mod == 1 or mod == 2 else 0.25
+    r0_true = 1.
+    rho0_true = 40.e7 if mod == 1 or mod == 2 else 6.4e7
 
-    return R,v,dv, rh, r0_true, rho0_true
+    return R, v, dv, rh, r0_true, rho0_true

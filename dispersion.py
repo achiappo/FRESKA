@@ -2,7 +2,7 @@ import numpy as np
 from profiles import DMProfile, StellarProfile, AnisotropyKernel
 
 class SphericalJeansDispersion(object):
-    def __init__(self, dm, stellar, anisotropy,**kwargs):
+    def __init__(self, dm, stellar, anisotropy, **kwargs):
         if isinstance(dm, DMProfile):
             self.dm = dm
         elif isinstance(dm, str):
@@ -17,16 +17,16 @@ class SphericalJeansDispersion(object):
             self.kernel = build_kernel(anisotropy,**kwargs)
         G=4.3e-6
         self.cst = 8.*np.pi*G
-        self.params = {}
+        self.params = {'J':18} #dummy value
         self.synch()
         
     def synch(self):
         for par in self.dm.params:
-            self.params['dm_'+par]=self.dm.__dict__[par]
+            self.params['dm_'+par] = self.dm.__dict__[par]
         for par in self.stellar.params:
-            self.params['st_'+par]=self.stellar.__dict__[par]
+            self.params['st_'+par] = self.stellar.__dict__[par]
         for par in self.kernel.params:
-            self.params['ker_'+par]=self.kernel.__dict__[par]
+            self.params['ker_'+par] = self.kernel.__dict__[par]
     
     def setparams(self, name, value):
         if name.strip('dm_') in self.dm.__dict__:
@@ -35,14 +35,17 @@ class SphericalJeansDispersion(object):
             setattr(self.stellar, name.strip('st_'), value)
         if name.strip('ker_') in self.kernel.__dict__:
             setattr(self.kernel, name.strip('ker_'), value)
+        if name == 'J':
+        	setattr(self, name, value)
+        	self.params[name] = value
         self.synch()
         
-    def integrand(self, s, R):
+    def integrand(self, s, R, **kwargs):
         #not correct : R could be provided which is not in inital self.R
         #this is weak anyway, why are r0 and rh singled out parameters?
         r0 = kwargs['r0'] if 'r0' in kwargs else self.dm.r0
         rh = kwargs['rh'] if 'rh' in kwargs else self.stellar.rh
-        val = self.stellar.density(s/rh) * self.dm.mass(s/r0) * self.kernel(s/R) / s
+        val = self.stellar.density(s/rh) * self.dm.mass(s/r0) * self.kernel(s, R) / s
         return val
 
     def compute(self, R):
@@ -56,7 +59,7 @@ class SphericalJeansDispersion(object):
                 integral, error = quad(self.integrand, rr, np.inf, args=(rr,))
                 I_of_R = self.stellar_profile.surface_brightness(rr)
                 sigma2[i] =  integral / I_of_R / np.sqrt(self.dm.Jreduced)
-        return sigma2 * r0**3 *self.cst * np.power(10,self.J/2.)
+        return sigma2 * self.dm.r0**3 * self.cst * np.power(10,self.J/2.)
         
 
 ##############################################################################

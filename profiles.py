@@ -1,11 +1,11 @@
 from exceptions import Exception, ValueError
-from scipy.special import betainc, kn, hyp2f1, gammainc
+from scipy.special import betainc, kn, hyp2f1, gamma
 from scipy import integrate as sciint
-from math import cos, atan, sqrt
+from math import cos, atan, asin, sqrt
 import numpy as np
 
 ##############################################################################
-# inverse hyperbolic cosecant (used for gamma* = 1 , non-Plum)
+# inverse hyperbolic cosecant (used for c* = 1 , non-Plum)
 def inv_csch(x):
     return np.log(np.sqrt(1+x**-2.)+x**-1.)
 
@@ -55,12 +55,12 @@ class StellarProfile(Profile):
         rh=kwargs['rh']
         if np.isscalar(R):
             integrand = lambda r,rh,R: self.density(r/rh)*r/np.sqrt(r**2-R**2)
-            return 2*quad(integrand, R, +np.inf, args=(rh,R))[0] 
+            return 2*sciint.quad(integrand, R, +np.inf, args=(rh,R))[0]
         else :
             res = np.zeros_like(R)
             for i, RR in enumerate(R):
                 integrand = lambda r,rh,RR: self.density(r/rh)*r/np.sqrt(r**2-RR**2)
-                res[i] = 2*quad(integrand, RR, +np.inf, args=(rh,RR))[0] 
+                res[i] = 2*sciint.quad(integrand, RR, +np.inf, args=(rh,RR))[0]
             return res
         
 class genPlummerProfile(StellarProfile):
@@ -77,13 +77,14 @@ class genPlummerProfile(StellarProfile):
         super(genPlummerProfile, self).__init__(**kwargs)
         if 'a' in kwargs or 'b' in kwargs:
             print "exponent parameters a and b are fixed to 2 and 5," +\
-            "respectively, in generalized Plummer profiles."+\
-            " Use Zhao profiles instead."
+            "respectively, in generalized Plummer profiles. "+\
+            "Use ZhaoProfile() instead."
         self.a = 2
         self.b = 5
         if 'c' not in kwargs:
             self.c = 0 #standard Plummer
-        self.params+=['c']
+        self.params += ['c']
+
     def density(self, x):
         """
         return the stellar density.
@@ -113,10 +114,10 @@ class DMProfile(Profile):
     def __init__(self, **kwargs):
         super(DMProfile, self).__init__(**kwargs)
         if 'r0' not in kwargs:
-            self.r0=1
+            self.r0 = 1
         if 'rho0' not in kwargs:
-            self.rho0=1
-        self.params=['r0', 'rho0']
+            self.rho0 = 1
+        self.params = ['r0', 'rho0']
 
     def reducedJ(self, D, theta, rt, with_errs=False):
         """
@@ -177,39 +178,39 @@ class  ZhaoProfile(DMProfile):
 
 ##############################################################################
 #Anisotropy kernels
+'''
 class AnisotropyKernel(object):
     """
     Mamon-Lokas integral for isotropic kernels
     """
-    def __init__(self, **kwargs):
+    def __init__(self, model, **kwargs):
         self.__dict__ = kwargs
+        self.model = model
         self.params = []
-        if self.model == 'constBeta':
+        if self.model == 'CONSTBETA':
         	#default to constant zero anisotropy
-        	self.beta = 0.
-        	self.params+=['beta']
+        	self.beta = kwargs['beta'] if 'beta' in kwargs else 0.
+        	self.params = ['beta']
         elif self.model == 'OM':
         	#default to radial anisotropy
-        	self.ra = 0.
-        	self.params+=['ra']
+        	self.ra = kwargs['ra'] if 'ra' in kwargs else 0.
+        	self.params = ['ra']
 
-    def __call__(self, u, R, **kwargs):
+    def __call__(self, r, R):
         """
         return the isotropic kernel for u=r/R, r is a running radius 
         (the variable in the integrand), and R is the star radius (data)
         """
+        u = r / R
         mod = self.model
         # isotropic model kernel function
-        if mod == 'iso':
+        if mod == 'ISO':
             return sqrt(1.-u**(-2))
         # radial anisotropy kernel function
-        elif mod == 'rad':
+        elif mod == 'RAD':
         	return pi*u/4. - 0.5*np.sqrt(1. - 1./u/u) - u*asin(1./u)/2.
         # cosntant beta anisotropy kernel function
-        elif mod == 'constBeta':
-        	if 'beta' not in self.params:
-        		self.params=['beta']
-        		self.beta = 0.
+        elif mod == 'CONSTBETA':
         	beta = self.beta
         	ker1 = sqrt(1.-1./u/u) / (1.-2.*beta)
         	ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
@@ -217,15 +218,71 @@ class AnisotropyKernel(object):
         	return ker1 + ker2 * ker3
         # Osipkov-Merrit model kernel function
         elif mod == 'OM':
-        	if 'ra' not in self.params:
-        		self.params=['ra']
-        		self.ra = 0.
-        	w = self.ra/R
+        	w = self.ra / R
         	ker1 = (w*w + 0.5)*(u*u + w*w)/u/(w*w + 1.)**1.5
         	ker2 = atan(np.sqrt((u*u - 1.)/(w*w + 1.)))
         	ker3 = 0.5/(w*w + 1.)*sqrt(1. - 1./u*u)
         	return ker1 * ker2 - ker3
+        else:
+        	raise ValueError("Unrecognized anisotropy type %s"%mod)
+'''
+class AnisotropyKernel(object):
+    """
+    Mamon-Lokas integral for isotropic kernels
+    """
+    def __init__(self, **kwargs):
+        self.__dict__ = kwargs
 
+class IsotropicKernel(AnisotropyKernel):
+	"""docstring for IsotropicKernel"""
+	def __init__(self, **kwargs):
+		super(IsotropicKernel,self).__init__(**kwargs)
+		self.params = []
+
+	def __call__(self, r, R):
+		u = r / R
+		return sqrt(1.-u**(-2))
+
+class RadialKernel(AnisotropyKernel):
+	"""docstring for RadialKernel"""
+	def __init__(self, **kwargs):
+		super(RadialKernel,self).__init__(**kwargs)
+		self.params = []
+
+	def __call__(self, r, R):
+		u = r / R
+		return pi*u/4. - 0.5*sqrt(1. - 1./u/u) - u*asin(1./u)/2.
+
+class ConstBetaKernel(AnisotropyKernel):
+	"""docstring for ConstBetaKernel"""
+	def __init__(self, **kwargs):
+		super(ConstBetaKernel,self).__init__(**kwargs)
+		self.beta = kwargs['beta'] if 'beta' in kwargs else 0.
+		self.params = ['beta']
+
+	def __call__(self, r, R):
+		u = r / R
+		beta = self.beta
+		ker1 = sqrt(1.-1./u/u) / (1.-2.*beta)
+		ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
+		ker3 = u**(2*beta-1) * (1.-betainc(1./u/u, beta+0.5, 0.5))
+		return ker1 + ker2 * ker3
+
+class OMKernel(AnisotropyKernel):
+	"""docstring for OMKernel"""
+	def __init__(self, **kwargs):
+		super(OMKernel,self).__init__(**kwargs)
+		self.ra = kwargs['ra'] if 'ra' in kwargs else 0.
+		self.params = ['ra']
+
+	def __call__(self, r, R):
+		ra = self.ra
+		u = r / R
+		w = ra / R
+		ker1 = (w*w + 0.5)*(u*u + w*w)/u/(w*w + 1.)**1.5
+		ker2 = atan(np.sqrt((u*u - 1.)/(w*w + 1.)))
+		ker3 = 0.5/(w*w + 1.)*sqrt(1. - 1./u*u)
+		return ker1 * ker2 - ker3
 
 ##############################################################################
 #Helper functions
@@ -240,9 +297,27 @@ def build_profile(profile_type, **kwargs):
         return ZhaoProfile(**kwargs)
     else:
         raise ValueError("Unrecognized type %s"%profile_type)
-
+'''
 def build_kernel(kernel_type, **kwargs):
-    if kernel_typ.upper()=='ISO':
+    if kernel_type.upper()=='ISO':
+        return AnisotropyKernel(kernel_type.upper(),**kwargs)
+    elif kernel_type.upper()=='RAD':
+        return AnisotropyKernel(kernel_type.upper(),**kwargs)
+    elif kernel_type.upper()=='CONSTBETA':
+        return AnisotropyKernel(kernel_type.upper(),**kwargs)
+    elif kernel_type.upper()=='OM':
+        return AnisotropyKernel(kernel_type.upper(),**kwargs)
+    else:
+        raise ValueError("Unrecognized anisotropy type %s"%profile_type)
+'''
+def build_kernel(kernel_type, **kwargs):
+    if kernel_type.upper()=='ISO':
         return IsotropicKernel(**kwargs)
+    elif kernel_type.upper()=='RAD':
+        return RadialKernel(**kwargs)
+    elif kernel_type.upper()=='CONSTBETA':
+        return ConstBetaKernel(**kwargs)
+    elif kernel_type.upper()=='OM':
+        return OMKernel(**kwargs)
     else:
         raise ValueError("Unrecognized anisotropy type %s"%profile_type)

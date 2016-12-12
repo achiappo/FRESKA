@@ -5,8 +5,8 @@ class LogLikelihood(object):
 	def __init__(self, data, sigma):
 		self.data = data
 		self.sigma = sigma
-		self.sigma.data = data
-		self.free_pars = {}
+		self.sigma.data = data # instruction to pass the data back to the SigmaLos object
+		self.free_pars = {'J':18}
 
 	def get_free_pars(self):
 		return self.free_pars
@@ -30,21 +30,20 @@ class LogLikelihood(object):
 		self.compute()
 
 class GaussianLikelihood(LogLikelihood):
-    def __init__(self, **kwargs):
-        super(LogLikelihood, self).__init__(**kwargs)
+    def __init__(self, data, sigma):
+        super(GaussianLikelihood, self).__init__(data, sigma)
 
     def compute(self):
-    	R = self.data['R']
-        v = self.data['v']
-        dv = self.data['dv']
+    	R = self.data[0]#['R']
+        v = self.data[1]#['v']
+        dv = self.data[2]#['dv']
         #need to properly deal with parallelizing over R and possibly J
         #note : the fitter below uses fit to fit for J
         #in case of an array of Js, one should write another scan function
         #so it might be that here only the R parallelization is in order
         S = (dv**2.) + self.sigma.compute(R) #this is an array like R array
         res = (np.log(S) + ((v-u)**2.)/S)
-        res = res.sum()*0.5
-        
+        res = res.sum() * 0.5
         return res
 
 
