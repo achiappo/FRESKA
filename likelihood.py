@@ -11,24 +11,26 @@ class LogLikelihood(object):
 	def set_free(self, parname, **kwargs):
 		if parname not in self.sigma.params:
 			raise ValueError('%s not a parameter of logLike function.\n'%parname\
-				+'The parameters are %s'%self.sigma.params.keys())
+				+'\t The parameters are %s'%self.sigma.params.keys())
 		if parname not in self.free_pars:
 			if kwargs == {}:
 				kwargs['val'] = self.sigma.params[parname]
 			self.free_pars[parname] = kwargs
 
 	def __call__(self, *par_array):
+		# would be worthwhile putting the following in an indented block
+		# and add the caching+retrieving instructions
 		for i,key in enumerate(self.free_pars.keys()):
 			#defer to sigma object the actual setting, so that 
 			#the loglike object does not need to know which param 
 			#comes from which part of the sigma computation
 			#note : J is a parameter here
 			self.sigma.setparams(key, par_array[i])
-		self.compute()
+		return self.compute()
 
 class GaussianLikelihood(LogLikelihood):
-    def __init__(self, data, sigma):
-        super(GaussianLikelihood, self).__init__(data, sigma)
+    def __init__(self, *args):
+        super(GaussianLikelihood, self).__init__(*args)
 
     def compute(self):
     	R = self.data[0]#['R']
@@ -38,10 +40,9 @@ class GaussianLikelihood(LogLikelihood):
         #note : the fitter below uses fit to fit for J
         #in case of an array of Js, one should write another scan function
         #so it might be that here only the R parallelization is in order
-        S = (dv**2.) + self.sigma.compute(R) #this is an array like R array
-        res = (np.log(S) + ((v-v.mean())**2.)/S)
-        res = res.sum() * 0.5
-        return res
+        S = dv**2 + self.sigma.compute(R) #this is an array like R array
+        res = np.log(S) + ((v-v.mean())**2)/S
+        return res.sum() / 2.
 
 
 ##############################################################################

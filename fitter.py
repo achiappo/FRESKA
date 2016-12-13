@@ -8,48 +8,47 @@ class MinuitFitter(object):
         global global_loglike
         global_loglike = loglike
         self.settings = {'errordef':0.5,'print_level':0,'pedantic':False}
-        self.synch()
+        self._synch()
         
-    def synch(self):
+    def _synch(self):
         for key,val in self.loglike.free_pars.items():
             if hasattr(val, '__iter__'):
-                #make room for future add of boundaries and/or errors
-                self.settings[key]= val.values()[0]
+                self.settings[key] = val.values()[0]
             else:
-                self.settings[key]= val
+                self.settings[key] = val
 
     def set_free(self, parnames):
         parnames=np.array(parnames, ndmin=1, copy=False)
         for par in parnames:
             if par not in self.loglike.sigma.params:
                 raise ValueError('%s not a parameter of logLike function.\n'%par\
-				+'The parameters are %s'%self.loglike.sigma.params.keys())
-            self.settings['fix_%s'%par]=False
+				+'\t The parameters are %s'%self.loglike.sigma.params.keys())
+            self.settings['fix_%s'%par] = False
 
     def set_fixed(self, parnames):
         parnames=np.array(parnames, ndmin=1, copy=False)
         for par in parnames:
             if par not in self.loglike.sigma.params:
                 raise ValueError('%s not a parameter of logLike function.\n'%par\
-				+'The parameters are %s'%self.loglike.sigma.params.keys())
-            self.settings['fix_%s'%par]=True
+				+'\t The parameters are %s'%self.loglike.sigma.params.keys())
+            self.settings['fix_%s'%par] = True
 
+    def set_value(self, par, value):
+        if par not in self.loglike.free_pars:
+            raise ValueError('%s not a free parameter of logLike function.\n'%par\
+				+'\t The free parameters are %s'%self.loglike.free_pars.keys())
+        self.settings['%s'%par] = value
+    
     def set_error(self, par, value):
         if par not in self.loglike.free_pars:
             raise ValueError('%s not a free parameter of logLike function.\n'%par\
-				+'The free parameters are %s'%self.loglike.free_pars.keys())
-        if par not in self.loglike.sigma.params:
-            raise ValueError('%s not a parameter of logLike function.\n'%par\
-				+'The parameters are %s'%self.loglike.sigma.params.keys())
+				+'\t The free parameters are %s'%self.loglike.free_pars.keys())
         self.settings['error_%s'%par] = value
         
     def set_bound(self, par, value):
         if par not in self.loglike.free_pars:
         	raise ValueError('%s not a free parameter of logLike function.\n'%par\
-				+'The free parameters are %s'%self.loglike.free_pars.keys())
-        if par not in self.loglike.sigma.params:
-            raise ValueError('%s not a parameter of logLike function.\n'%par\
-				+'The parameters are %s'%self.loglike.sigma.params.keys())
+				+'\t The free parameters are %s'%self.loglike.free_pars.keys())
         self.settings['limit_%s'%par] = value
 
     def fit(self, **kwargs):
@@ -57,7 +56,8 @@ class MinuitFitter(object):
         strargs = ", ".join(freepars)
         fit_func = eval("lambda %s : global_loglike(%s)"%(strargs,strargs))
         minuit = Minuit(fit_func, **self.settings)
-        if 'tol' in kwargs: minuit.tol = kwargs['tol']
+        if 'tol' in kwargs: 
+        	minuit.tol = kwargs['tol']
         fitresult = minuit.migrad()
         return fitresult
 

@@ -76,7 +76,7 @@ class genPlummerProfile(StellarProfile):
         """
         super(genPlummerProfile, self).__init__(**kwargs)
         if 'a' in kwargs or 'b' in kwargs:
-            print "exponent parameters a and b are fixed to 2 and 5," +\
+            print "exponent parameters a and b are fixed to 2 and 5, "+\
             "respectively, in generalized Plummer profiles. "+\
             "Use ZhaoProfile() instead."
         self.a = 2

@@ -20,9 +20,9 @@ class SphericalJeansDispersion(object):
         self.dwarf_props = dwarf_props
         self.cst = 8.*np.pi*G
         self.params = {'J':18} #dummy value
-        self.synch()
+        self._synch()
         
-    def synch(self):
+    def _synch(self):
         for par in self.dm.params:
             self.params['dm_'+par] = self.dm.__dict__[par]
         for par in self.stellar.params:
@@ -40,7 +40,7 @@ class SphericalJeansDispersion(object):
         if name == 'J':
         	setattr(self, name, value)
         	self.params[name] = value
-        self.synch()
+        self._synch()
         
     def integrand(self, s, R, **kwargs):
         #not correct : R could be provided which is not in inital self.R
