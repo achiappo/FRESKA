@@ -11,10 +11,7 @@ class MinuitFitter(object):
         self.synch()
         
     def synch(self):
-        for par in self.loglike.sigma.params:
-            if par in self.loglike.free_pars:
-                self.settings['fix_%s'%par] = False
-        for key,val in self.loglike.get_free_pars().items():
+        for key,val in self.loglike.free_pars.items():
             if hasattr(val, '__iter__'):
                 #make room for future add of boundaries and/or errors
                 self.settings[key]= val.values()[0]
@@ -38,25 +35,25 @@ class MinuitFitter(object):
             self.settings['fix_%s'%par]=True
 
     def set_error(self, par, value):
-        if par not in self.loglike.sigma.params:
-            raise ValueError('%s not a parameter of logLike function.\n'%par\
-				+'The parameters are %s'%self.loglike.sigma.params.keys())
         if par not in self.loglike.free_pars:
             raise ValueError('%s not a free parameter of logLike function.\n'%par\
 				+'The free parameters are %s'%self.loglike.free_pars.keys())
-        self.settings['error_%s'%par] = value
-        
-    def set_bound(self, par, value):
         if par not in self.loglike.sigma.params:
             raise ValueError('%s not a parameter of logLike function.\n'%par\
 				+'The parameters are %s'%self.loglike.sigma.params.keys())
+        self.settings['error_%s'%par] = value
+        
+    def set_bound(self, par, value):
         if par not in self.loglike.free_pars:
         	raise ValueError('%s not a free parameter of logLike function.\n'%par\
 				+'The free parameters are %s'%self.loglike.free_pars.keys())
+        if par not in self.loglike.sigma.params:
+            raise ValueError('%s not a parameter of logLike function.\n'%par\
+				+'The parameters are %s'%self.loglike.sigma.params.keys())
         self.settings['limit_%s'%par] = value
 
     def fit(self, **kwargs):
-        freepars = self.loglike.get_free_pars().keys()
+        freepars = self.loglike.free_pars.keys()
         strargs = ", ".join(freepars)
         fit_func = eval("lambda %s : global_loglike(%s)"%(strargs,strargs))
         minuit = Minuit(fit_func, **self.settings)

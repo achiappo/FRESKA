@@ -1,6 +1,6 @@
 from exceptions import Exception, ValueError
 from scipy.special import betainc, kn, hyp2f1, gamma
-from scipy import integrate as sciint
+from scipy.integrate import quad, nquad
 from math import cos, atan, asin, sqrt
 import numpy as np
 
@@ -55,12 +55,12 @@ class StellarProfile(Profile):
         rh=kwargs['rh']
         if np.isscalar(R):
             integrand = lambda r,rh,R: self.density(r/rh)*r/np.sqrt(r**2-R**2)
-            return 2*sciint.quad(integrand, R, +np.inf, args=(rh,R))[0]
+            return 2 * quad(integrand, R, +np.inf, args=(rh,R))[0]
         else :
             res = np.zeros_like(R)
             for i, RR in enumerate(R):
                 integrand = lambda r,rh,RR: self.density(r/rh)*r/np.sqrt(r**2-RR**2)
-                res[i] = 2*sciint.quad(integrand, RR, +np.inf, args=(rh,RR))[0]
+                res[i] = 2 * quad(integrand, RR, +np.inf, args=(rh,RR))[0]
             return res
         
 class genPlummerProfile(StellarProfile):
@@ -119,7 +119,7 @@ class DMProfile(Profile):
             self.rho0 = 1
         self.params = ['r0', 'rho0']
 
-    def reducedJ(self, D, theta, rt, with_errs=False):
+    def Jreduced(self, D, theta, rt, with_errs=False):
         """
         compute the reduced J factor \int_ymin^1 dy \int_0^zmax dx f^2(r(z,y))
         where
@@ -143,9 +143,9 @@ class DMProfile(Profile):
         def lim_y():
             return [ymin,1.]
 
-        res = sciint.nquad(integrand, ranges=[lim_u, lim_y], \
-                    opts=[{'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10},\
-                          {'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10}])
+        res = nquad(integrand, ranges=[lim_u, lim_y], \
+        			opts=[{'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10},\
+        				{'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10}])
         if with_errs:
             return res[0], res[1]
         else:
@@ -154,7 +154,7 @@ class DMProfile(Profile):
     def Jfactor(self, D, theta, rt, with_errs=False):
         Msun2kpc5_GeVcm5 = 4463954.894661358
         cst = 4*pi*rho0**2*r0*Msun2kpc5_GeVcm5
-        return cst * self.reducedJ(D, theta, rt, with_errs=False)
+        return cst * self.Jreduced(D, theta, rt, with_errs=False)
 
 class  ZhaoProfile(DMProfile):
     def __init__(self, **kwargs):

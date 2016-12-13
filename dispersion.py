@@ -1,9 +1,10 @@
 import numpy as np
+from scipy.integrate import quad
 from profiles import DMProfile, StellarProfile, AnisotropyKernel
 
 class SphericalJeansDispersion(object):
-    def __init__(self, dm, stellar, anisotropy, **kwargs):
-        if isinstance(dm, DMProfile):
+    def __init__(self, dm, stellar, anisotropy, dwarf_props, **kwargs):
+    	if isinstance(dm, DMProfile):
             self.dm = dm
         elif isinstance(dm, str):
             self.dm = build_profile(dm,**kwargs)
@@ -16,6 +17,7 @@ class SphericalJeansDispersion(object):
         elif isinstance(anisotropy, str):
             self.kernel = build_kernel(anisotropy,**kwargs)
         G=4.3e-6
+        self.dwarf_props = dwarf_props
         self.cst = 8.*np.pi*G
         self.params = {'J':18} #dummy value
         self.synch()
@@ -50,15 +52,19 @@ class SphericalJeansDispersion(object):
 
     def compute(self, R):
         #called by a LogLike object
+        D = self.dwarf_props['D']
+        theta = self.dwarf_props['theta']
+        rt = self.dwarf_props['rt']
+        errs = self.dwarf_props['errs']
         if np.isscalar(R):
-            integral, error = quad(self.integrand, R, np.inf, args=(R,))
-            sigma2 = integral / self.stellar_profile.surface_brightness(R) / np.sqrt(self.dm.Jreduced) 
+            integral, error = sciint.quad(self.integrand, R, np.inf, args=(R,))
+            sigma2 = integral / self.stellar.surface_brightness(R) / np.sqrt(self.dm.Jreduced(D, theta, rt, errs))
         else:
-            sigma2=np.zeros_like(R)
+            sigma2 = np.zeros_like(R)
             for i,rr in enumerate(R):
                 integral, error = quad(self.integrand, rr, np.inf, args=(rr,))
-                I_of_R = self.stellar_profile.surface_brightness(rr)
-                sigma2[i] =  integral / I_of_R / np.sqrt(self.dm.Jreduced)
+                I_of_R = self.stellar.surface_brightness(rr)
+                sigma2[i] = integral / I_of_R / np.sqrt(self.dm.Jreduced(D, theta, rt, errs))
         return sigma2 * self.dm.r0**3 * self.cst * np.power(10,self.J/2.)
         
 
