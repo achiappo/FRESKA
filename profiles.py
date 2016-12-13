@@ -81,8 +81,9 @@ class genPlummerProfile(StellarProfile):
             "Use ZhaoProfile() instead."
         self.a = 2
         self.b = 5
+        # default to Plummer
         if 'c' not in kwargs:
-            self.c = 0 #standard Plummer
+            self.c = 0
         self.params += ['c']
 
     def density(self, x):
@@ -161,20 +162,20 @@ class  ZhaoProfile(DMProfile):
         super(ZhaoProfile, self).__init__(**kwargs)
         #default to NFW
         if 'a' not in kwargs:
-            self.a = 1
+            self.a = 1.
         if 'b' not in kwargs:
-            self.b = 3
+            self.b = 3.
         if 'c' not in kwargs:
-            self.c = 1
+            self.c = 1.
         self.params+=['a','b','c']
         
     def density(self,x):
         a, b, c = self.a, self.b, self.c
-        return 1. / x**c / (1.+x**a)**((b-c) / a)
+        return zhao_func(x, a, b, c)
 
     def mass(self, x):
         a, b, c = self.a, self.b, self.c
-        return x**(3.-a) * hyp2f1( (3-a)/b, (c-a)/b, (b-a+3.)/b, -x**b )
+        return x**(3.-c) * hyp2f1((3.-c)/a, (b-c)/a, (a-c+3.)/a, -x**a) / (3.-c)
 
 ##############################################################################
 #Anisotropy kernels

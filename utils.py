@@ -12,7 +12,7 @@ def load_data(gal):
         rt = float(parameters[3])
         
     x,v,dv = np.loadtxt('../data/velocities/velocities_%s.dat'%gal,dtype=float,usecols=(0,1,2),unpack=True)
-    return x,v,dv,D,rh,rt
+    return x, v, dv, D, rh, rt
 
 def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors):
     #homedir = '/home/andrea/Desktop/work/DWARF/jvalue/project1/test/Isotrop_Core_nonPlum'
@@ -48,7 +48,7 @@ def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors):
     
     if MockSize<dataSize:
         idx=np.random.randint(low=dataSize, size=MockSize)
-    R,v,dv=R[idx],v[idx],dv[idx]
+        R, v, dv = R[idx], v[idx], dv[idx]
 
     rh = 1. if mod == 1 or mod == 2 else 0.25
     r0_true = 1.

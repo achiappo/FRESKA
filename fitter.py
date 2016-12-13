@@ -23,15 +23,17 @@ class MinuitFitter(object):
             if par not in self.loglike.sigma.params:
                 raise ValueError('%s not a parameter of logLike function.\n'%par\
 				+'\t The parameters are %s'%self.loglike.sigma.params.keys())
-            self.settings['fix_%s'%par] = False
+            else:
+            	self.loglike.set_free(par)
+        self._synch()
 
     def set_fixed(self, parnames):
         parnames=np.array(parnames, ndmin=1, copy=False)
         for par in parnames:
-            if par not in self.loglike.sigma.params:
-                raise ValueError('%s not a parameter of logLike function.\n'%par\
-				+'\t The parameters are %s'%self.loglike.sigma.params.keys())
-            self.settings['fix_%s'%par] = True
+        	if par not in self.loglike.free_pars:
+        		raise ValueError('%s not a free parameter of logLike function.\n'%par\
+        			+'\t The free parameters are %s'%self.loglike.free_pars.keys())
+        	self.settings['fix_%s'%par] = True
 
     def set_value(self, par, value):
         if par not in self.loglike.free_pars:
