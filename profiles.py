@@ -1,7 +1,7 @@
 from exceptions import Exception, ValueError
 from scipy.special import betainc, kn, hyp2f1, gamma
 from scipy.integrate import quad, nquad
-from math import cos, atan, asin, sqrt
+from math import pi, cos, atan, asin, sqrt
 import numpy as np
 
 ##############################################################################
@@ -92,7 +92,7 @@ class genPlummerProfile(StellarProfile):
         input : x=r/rh (can be array-like)
         output : rhoh * rh * x**(-c) * (1.+x**2)**(-(5-c)/2)
         """
-        return self.rhoh  * self.rh * zhao_func(x, self.a, self.b, self.c)
+        return self.rhoh * zhao_func(x, self.a, self.b, self.c)
     
     def surface_brightness(self, x):
         """
@@ -108,8 +108,8 @@ class genPlummerProfile(StellarProfile):
             return result * (1+x*x)**(-2)
         elif c == 1:
             return result * plummer1_func(x)
-        else :
-            return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=x*self.rh)
+        else:
+        	return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=x*self.rh)
 
 class DMProfile(Profile):
     def __init__(self, **kwargs):
@@ -135,6 +135,8 @@ class DMProfile(Profile):
         Dprime = D/r0
         rtprime = rt/r0
         ymin = cos(np.radians(theta))
+        Msun2kpc5_GeVcm5 = 4463954.894661358
+        cst = 4 * pi * self.r0 * Msun2kpc5_GeVcm5
         def radius(z,y):
             return sqrt( z*z + Dprime**2*(1-y*y)) 
         def integrand(z,y):
@@ -148,14 +150,12 @@ class DMProfile(Profile):
         			opts=[{'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10},\
         				{'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10}])
         if with_errs:
-            return res[0], res[1]
+            return cst * res[0], res[1]
         else:
-            return res[0]
+            return cst * res[0]
 
     def Jfactor(self, D, theta, rt, with_errs=False):
-        Msun2kpc5_GeVcm5 = 4463954.894661358
-        cst = 4*pi*rho0**2*r0*Msun2kpc5_GeVcm5
-        return cst * self.Jreduced(D, theta, rt, with_errs=False)
+        return self.rho**2 * self.Jreduced(D, theta, rt, with_errs=False)
 
 class  ZhaoProfile(DMProfile):
     def __init__(self, **kwargs):
