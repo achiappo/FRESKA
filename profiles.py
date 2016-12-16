@@ -96,9 +96,11 @@ class genPlummerProfile(StellarProfile):
     
     def surface_brightness(self, x):
         """
-        Return the analytical solution for the brightness profile of a Plummer density
+        Return the analytical solution for the brightness profile of a 
+        Plummer density
         input : x=R/rh
-        output : rhoh * rh * (1+x*x)**(-2) if c==0 ,
+        output : 
+        rhoh * rh * (1+x*x)**(-2) if c==0 ,
         rhoh * rh * ((2+x**2)*inv_csch(x) - np.sqrt(1+x**2))/(1+x**2)**1.5 if c==1
         otherwise, default to base class Abel integration.
         """
@@ -179,57 +181,15 @@ class  ZhaoProfile(DMProfile):
 
 ##############################################################################
 #Anisotropy kernels
-'''
-class AnisotropyKernel(object):
-    """
-    Mamon-Lokas integral for isotropic kernels
-    """
-    def __init__(self, model, **kwargs):
-        self.__dict__ = kwargs
-        self.model = model
-        self.params = []
-        if self.model == 'CONSTBETA':
-        	#default to constant zero anisotropy
-        	self.beta = kwargs['beta'] if 'beta' in kwargs else 0.
-        	self.params = ['beta']
-        elif self.model == 'OM':
-        	#default to radial anisotropy
-        	self.ra = kwargs['ra'] if 'ra' in kwargs else 0.
-        	self.params = ['ra']
 
-    def __call__(self, r, R):
-        """
-        return the isotropic kernel for u=r/R, r is a running radius 
-        (the variable in the integrand), and R is the star radius (data)
-        """
-        u = r / R
-        mod = self.model
-        # isotropic model kernel function
-        if mod == 'ISO':
-            return sqrt(1.-u**(-2))
-        # radial anisotropy kernel function
-        elif mod == 'RAD':
-        	return pi*u/4. - 0.5*np.sqrt(1. - 1./u/u) - u*asin(1./u)/2.
-        # cosntant beta anisotropy kernel function
-        elif mod == 'CONSTBETA':
-        	beta = self.beta
-        	ker1 = sqrt(1.-1./u/u) / (1.-2.*beta)
-        	ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
-        	ker3 = u**(2*beta-1) * (1.-betainc(1./u/u, beta+0.5, 0.5))
-        	return ker1 + ker2 * ker3
-        # Osipkov-Merrit model kernel function
-        elif mod == 'OM':
-        	w = self.ra / R
-        	ker1 = (w*w + 0.5)*(u*u + w*w)/u/(w*w + 1.)**1.5
-        	ker2 = atan(np.sqrt((u*u - 1.)/(w*w + 1.)))
-        	ker3 = 0.5/(w*w + 1.)*sqrt(1. - 1./u*u)
-        	return ker1 * ker2 - ker3
-        else:
-        	raise ValueError("Unrecognized anisotropy type %s"%mod)
-'''
 class AnisotropyKernel(object):
     """
-    Mamon-Lokas integral for isotropic kernels
+    Mamon-Lokas (2005) Kernel functions for calculating the intrinsic
+    velocity dispersion for the following anistropy models:
+    - isotropic 
+    - radial anisotropy 
+    - constant Beta anistropy 
+    - Osipkov-Merritt anistropy profile
     """
     def __init__(self, **kwargs):
         self.__dict__ = kwargs
@@ -287,6 +247,7 @@ class OMKernel(AnisotropyKernel):
 
 ##############################################################################
 #Helper functions
+
 def build_profile(profile_type, **kwargs):
     if profile_type.upper() == 'PLUMMER':
         return genPlummerProfile(**kwargs)
@@ -298,19 +259,7 @@ def build_profile(profile_type, **kwargs):
         return ZhaoProfile(**kwargs)
     else:
         raise ValueError("Unrecognized type %s"%profile_type)
-'''
-def build_kernel(kernel_type, **kwargs):
-    if kernel_type.upper()=='ISO':
-        return AnisotropyKernel(kernel_type.upper(),**kwargs)
-    elif kernel_type.upper()=='RAD':
-        return AnisotropyKernel(kernel_type.upper(),**kwargs)
-    elif kernel_type.upper()=='CONSTBETA':
-        return AnisotropyKernel(kernel_type.upper(),**kwargs)
-    elif kernel_type.upper()=='OM':
-        return AnisotropyKernel(kernel_type.upper(),**kwargs)
-    else:
-        raise ValueError("Unrecognized anisotropy type %s"%profile_type)
-'''
+
 def build_kernel(kernel_type, **kwargs):
     if kernel_type.upper()=='ISO':
         return IsotropicKernel(**kwargs)

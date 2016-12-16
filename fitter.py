@@ -1,5 +1,5 @@
 from iminuit import Minuit
-from exceptions import ValueError
+from exceptions import ValueError, RuntimeError
 import numpy as np
 
 class MinuitFitter(object):
@@ -53,58 +53,28 @@ class MinuitFitter(object):
 				+'\t The free parameters are %s'%self.loglike.free_pars.keys())
         self.settings['limit_%s'%par] = value
 
-    def fit(self, **kwargs):
+    def set_minuit(self, **kwargs):
         freepars = self.loglike.free_pars.keys()
         strargs = ", ".join(freepars)
         fit_func = eval("lambda %s : global_loglike(%s)"%(strargs,strargs))
         minuit = Minuit(fit_func, **self.settings)
         if 'tol' in kwargs: 
         	minuit.tol = kwargs['tol']
-        fitresult = minuit.migrad()
-        return fitresult
+        if 'strategy' in kwargs:
+        	minuit.set_strategy(kwargs['strategy'])
+        self.minuit = minuit
 
+    def migrad_min(self, **kwargs):
+    	return self.minuit.migrad(**kwargs)
 
-##############################################################################
-class MinuitFitter2(object):
-    def __init__(self, fcn):
-        self.fcn = fcn
-        self.settings = {'errordef':0.5,'print_level':0,'pedantic':False,}
-
-    def fit(self):
-        #this does not work, as Minuit will check the signature of the compute function to know the parameters. This would force the 
-        #compute signature to include all possible parameters for all possible DM stellar and anisotropic parameters, which is untenable.
-        Jfit = Minuit(lh.compute,**self.settings)
-        Jfit.tol = 0.01
-        BF = Jfit.migrad()
-        return BF
-
-    def set_free(self, parnames):
-        parnames=np.array(parnames, ndmin=1, copy=False)
-        for par in parnames:
-            if par not in self.fcn.__dict__:
-                raise ValueError('%s not a parameter of logLike function'%par)
-            self.settings['fix_%s'%par]=False
-
-    def set_fixed(self, parnames):
-        parnames=np.array(parnames, ndmin=1, copy=False)
-        for par in parnames:
-            if par not in self.fcn.__dict__:
-                raise ValueError('%s not a parameter of logLike function'%par)
-            self.settings['fix_%s'%par]=True
-
-    def set_value(self, par, value):
-        if par not in self.fcn.__dict__:
-            raise ValueError('%s not a parameter of logLike function'%par)
-        self.settings['%s'%par]=value
-
-
-    def set_error(self, par, value):
-        if par not in self.fcn.__dict__:
-            raise ValueError('%s not a parameter of logLike function'%par)
-        self.settings['error_%s'%par]=value
-        
-    def set_bound(self, par, value):
-        if par not in self.fcn.__dict__:
-            raise ValueError('%s not a parameter of logLike function'%par)
-        self.settings['limit_%s'%par]=value
+    def minos_profile(self, var, **kwargs):
+    	try:
+    		self.minuit.hesse()
+    		var_array, Like, res = self.minuit.mnprofile(var, **kwargs)
+    	except RuntimeError:
+    		print('Function not at minimum. Running migrad first.')
+    		self.minuit.migrad(**kwargs)
+    		self.minuit.hesse()
+    		var_array, Like, res = self.minuit.mnprofile(var, **kwargs)
+    	return var_array, Like
 
