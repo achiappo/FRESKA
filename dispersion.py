@@ -56,7 +56,7 @@ class SphericalJeansDispersion(object):
         theta = self.dwarf_props['theta']
         rt = self.dwarf_props['rt']
         errs = self.dwarf_props['errs']
-        Jred = np.sqrt(self.dm.Jreduced(D, theta, rt, errs))
+        Jred = np.sqrt(self.dm.Jfactor(D, theta, rt, errs))
         if np.isscalar(R):
             integral, error = quad(self.integrand, R, np.inf, args=(R,))
             sigma2 = integral / self.stellar.surface_brightness(R) / Jred

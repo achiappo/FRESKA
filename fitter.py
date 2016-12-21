@@ -65,6 +65,7 @@ class MinuitFitter(object):
         self.minuit = minuit
 
     def migrad_min(self, **kwargs):
+    	self.migrad_args = kwargs
     	return self.minuit.migrad(**kwargs)
 
     def minos_profile(self, var, **kwargs):
@@ -73,7 +74,7 @@ class MinuitFitter(object):
     		var_array, Like, res = self.minuit.mnprofile(var, **kwargs)
     	except RuntimeError:
     		print('Function not at minimum. Running migrad first.')
-    		self.minuit.migrad(**kwargs)
+    		self.minuit.migrad(**self.migrad_args)
     		self.minuit.hesse()
     		var_array, Like, res = self.minuit.mnprofile(var, **kwargs)
     	return var_array, Like

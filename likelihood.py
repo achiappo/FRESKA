@@ -32,15 +32,18 @@ class LogLikelihood(object):
 		self.cache[freepars] = S
 
 	def __call__(self, *par_array):
-		iscached, Scached = self._retrieve(*par_array)
-		if iscached:
-			S = Scached
+		if np.any(np.isnan(par_array)):
+			return np.nan
 		else:
-			for i,key in enumerate(self.free_pars.keys()):
-				self.sigma.setparams(key, par_array[i])
-		S = self.compute()
-		self._store(S, *par_array)
-		return S
+			iscached, Scached = self._retrieve(*par_array)
+			if iscached:
+				S = Scached
+			else:
+				for i,key in enumerate(self.free_pars.keys()):
+					self.sigma.setparams(key, par_array[i])
+				S = self.compute()
+			self._store(S, *par_array)
+			return S
 
 class GaussianLikelihood(LogLikelihood):
     def __init__(self, *args):
@@ -50,10 +53,11 @@ class GaussianLikelihood(LogLikelihood):
     	R = self.data[0]#['R']
         v = self.data[1]#['v']
         dv = self.data[2]#['dv']
+        vsys = self.data[3]
         #need to properly deal with parallelizing over R and possibly J
         #note : the fitter below uses fit to fit for J
         #in case of an array of Js, one should write another scan function
         #so it might be that here only the R parallelization is in order
         S = dv**2 + self.sigma.compute(R) #this is an array like R array
-        res = np.log(S) + ((v-v.mean())**2)/S
+        res = np.log(S) + ((v-vsys)**2)/S
         return res.sum() / 2.

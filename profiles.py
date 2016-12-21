@@ -1,4 +1,4 @@
-from exceptions import Exception, ValueError
+from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
 from scipy.special import betainc, kn, hyp2f1, gamma
 from scipy.integrate import quad, nquad
 from math import pi, cos, atan, asin, sqrt
@@ -14,7 +14,10 @@ def plummer1_func(x) :
     return ((2+x2)*inv_csch(x) - np.sqrt(1+x2))/(1+x2)**1.5
 
 def zhao_func(x, a, b, c):
-    return 1. / x**c / (1.+x**a)**((b-c) / a)
+	try:
+		return 1. / x**c / (1.+x**a)**((b-c) / a)
+	except (OverflowError, ZeroDivisionError):
+		return np.nan
 
 ##############################################################################
 
@@ -43,8 +46,8 @@ class StellarProfile(Profile):
         """
         super(StellarProfile, self).__init__(**kwargs)        
         self.rh =  kwargs['rh'] if 'rh' in kwargs else 1
-        self.rhoh= kwargs['rhoh'] if 'rhoh' in kwargs else 1
-        self.params=['rh', 'rhoh']
+        self.rhoh = kwargs['rhoh'] if 'rhoh' in kwargs else 1
+        self.params = ['rh', 'rhoh']
 
     def surface_brightness(self, *args, **kwargs):
         """
@@ -137,27 +140,30 @@ class DMProfile(Profile):
         Dprime = D/r0
         rtprime = rt/r0
         ymin = cos(np.radians(theta))
-        Msun2kpc5_GeVcm5 = 4463954.894661358
-        cst = 4 * pi * self.r0 * Msun2kpc5_GeVcm5
         def radius(z,y):
             return sqrt( z*z + Dprime**2*(1-y*y)) 
         def integrand(z,y):
-            return self.density(radius(z,y))**2
+        	try:
+        		return self.density(radius(z,y))**2
+        	except (OverflowError, ZeroDivisionError):
+        		return np.nan
         def lim_u(y):
             return [0, sqrt(rtprime**2 - Dprime**2*(1-y*y))]
         def lim_y():
             return [ymin,1.]
 
         res = nquad(integrand, ranges=[lim_u, lim_y], \
-        			opts=[{'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10},\
-        				{'limit':1000, 'epsabs':1.e-10, 'epsrel':1.e-10}])
+        			opts=[{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3},\
+        				{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3}])
         if with_errs:
-            return cst * res[0], res[1]
+            return res[0], res[1]
         else:
-            return cst * res[0]
+            return res[0]
 
     def Jfactor(self, D, theta, rt, with_errs=False):
-        return self.rho**2 * self.Jreduced(D, theta, rt, with_errs=False)
+        Msun2kpc5_GeVcm5 = 4463954.894661358
+        cst = 4 * pi * self.r0 * Msun2kpc5_GeVcm5
+        return cst * self.rho0**2 * self.Jreduced(D, theta, rt, with_errs=False)
 
 class  ZhaoProfile(DMProfile):
     def __init__(self, **kwargs):
@@ -169,15 +175,19 @@ class  ZhaoProfile(DMProfile):
             self.b = 3.
         if 'c' not in kwargs:
             self.c = 1.
-        self.params+=['a','b','c']
+        self.params += ['a','b','c']
         
     def density(self,x):
         a, b, c = self.a, self.b, self.c
         return zhao_func(x, a, b, c)
-
+    
     def mass(self, x):
         a, b, c = self.a, self.b, self.c
-        return x**(3.-c) * hyp2f1((3.-c)/a, (b-c)/a, (a-c+3.)/a, -x**a) / (3.-c)
+        try:
+        	H = hyp2f1((3.-c)/a, (b-c)/a, (a-c+3.)/a, -x**a)
+        	return x**(3.-c) * H / (3.-c)
+        except (OverflowError, ZeroDivisionError):
+        	return np.nan
 
 ##############################################################################
 #Anisotropy kernels
