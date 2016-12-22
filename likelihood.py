@@ -42,7 +42,7 @@ class LogLikelihood(object):
 				for i,key in enumerate(self.free_pars.keys()):
 					self.sigma.setparams(key, par_array[i])
 				S = self.compute()
-			self._store(S, *par_array)
+				self._store(S, *par_array)
 			return S
 
 class GaussianLikelihood(LogLikelihood):

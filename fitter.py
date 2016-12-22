@@ -78,4 +78,3 @@ class MinuitFitter(object):
     		self.minuit.hesse()
     		var_array, Like, res = self.minuit.mnprofile(var, **kwargs)
     	return var_array, Like
-
