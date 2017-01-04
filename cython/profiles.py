@@ -1,66 +1,30 @@
-from __future__ import division
 from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
 from scipy.special import betainc, kn, hyp2f1, gamma
 from scipy.integrate import quad, nquad
 from math import pi, cos, atan, asin, sqrt
 import numpy as np
-cimport numpy as np
+import cyfuncs
 
 ##############################################################################
 # functions cythonized
-cdef double inv_csch(double x):
-	# inverse hyperbolic cosecant (used for c* = 1 , non-Plum)
-	return np.log(np.sqrt(1+x**-2.)+x**-1.)
-
-cdef double plummer1_func(double x) :
-	x2 = x*x
-	return ((2+x2)*inv_csch(x) - np.sqrt(1+x2))/(1+x2)**1.5
-
-cdef double zhao_func(double x, double a, double b, double c):
-	try:
-		return 1. / x**c / (1.+x**a)**((b-c) / a)
-	except (OverflowError, ZeroDivisionError):
-		return np.nan
-
-cdef double mass_func(double x, double a, double b, double c):
-	try:
-		H = hyp2f1((3.-c)/a, (b-c)/a, (a-c+3.)/a, -x**a)
-		return x**(3.-c) * H / (3.-c)
-	except (OverflowError, ZeroDivisionError):
-		return np.nan
-
-cdef double radius(double z, double y, double Dprime):
-	try:
-		return sqrt( z*z + Dprime**2*(1-y*y))
-	except (OverflowError, ZeroDivisionError):
-		return np.nan
-
-cdef double func_isotropic_kernel(double r, double R):
-	u = r / R
-	return sqrt(1.-u**(-2))
-
-cdef double func_radial_kernel(double r, double R):
-	u = r / R
-	return pi*u/4. - 0.5*sqrt(1. - 1./u/u) - u*asin(1./u)/2.
-
-cdef double func_constant_kernel(double r, double R, double beta):
-	u = r / R
-	ker1 = sqrt(1.-1./u/u) / (1.-2.*beta)
-	ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
-	ker3 = u**(2*beta-1) * (1.-betainc(1./u/u, beta+0.5, 0.5))
-	return ker1 + ker2 * ker3
-
-cdef double func_OM_kernel(double r, double R, double ra):
-	u = r / R
-	w = ra / R
-	ker1 = (w*w + 0.5)*(u*u + w*w)/u/(w*w + 1.)**1.5
-	ker2 = atan(np.sqrt((u*u - 1.)/(w*w + 1.)))
-	ker3 = 0.5/(w*w + 1.)*sqrt(1. - 1./u*u)
-	return ker1 * ker2 - ker3
+#def inv_csch(double x):
+#	# inverse hyperbolic cosecant (used for c* = 1 , non-Plum)
+#	return np.log(np.sqrt(1+x**-2.)+x**-1.)
+#
+#def plummer1_func(double x):
+#	x2 = x*x
+#	return ((2+x2)*inv_csch(x) - np.sqrt(1+x2))/(1+x2)**1.5
+#
+#def zhao_func(double x, double a, double b, double c):
+#	try:
+#		return 1. / x**c / (1.+x**a)**((b-c) / a)
+#	except (OverflowError, ZeroDivisionError):
+#		return np.nan
 
 ##############################################################################
 
-cdef class Profile(object):
+
+class Profile(object):
 	"""
 	Base class for DM or stellar profiles. Only a density function is
 	expected for both. The base class just loads the arguments passed at
@@ -74,7 +38,7 @@ cdef class Profile(object):
 	def density(self, *args, **kwargs):
 		return Exception('Not implemented')
 
-cdef class StellarProfile(Profile):
+class StellarProfile(Profile):
 	"""
 	Define a stellar profile, for which the 2 universal parameters are
 	- rh : scale radius
@@ -82,8 +46,6 @@ cdef class StellarProfile(Profile):
 	This is still a base class, but it implements the Abel transform for the 
 	surface brightness computation, as a default for inherited classes.
 	"""
-	cdef double rh
-	cdef double rhoh
 	def __init__(self, **kwargs):
 		"""
 		ensure existence of rh and rhoh attributes
@@ -110,7 +72,7 @@ cdef class StellarProfile(Profile):
 				res[i] = 2 * quad(integrand, RR, +np.inf, args=(rh,RR))[0]
 			return res
 
-cdef class genPlummerProfile(StellarProfile):
+class genPlummerProfile(StellarProfile):
 	"""
 	Generalized Plummer stellar profile, where the exponent of the central
 	slope can be different from 0, the standard Plummer profile's value.
@@ -121,9 +83,6 @@ cdef class genPlummerProfile(StellarProfile):
 		(a,b,c) = (2, 5, c), c been defaulted to 0 (standard Plummer) if not
 		provided.
 		"""
-		cdef double a
-		cdef double b
-		cdef double c
 		super(genPlummerProfile, self).__init__(**kwargs)
 		if 'a' in kwargs or 'b' in kwargs:
 			print "exponent parameters a and b are fixed to 2 and 5, "+\
@@ -142,7 +101,7 @@ cdef class genPlummerProfile(StellarProfile):
 		input : x=r/rh (can be array-like)
 		output : rhoh * rh * x**(-c) * (1.+x**2)**(-(5-c)/2)
 		"""
-		return self.rhoh * zhao_func(x, self.a, self.b, self.c)
+		return self.rhoh * cyfuncs.zhao_func(x, self.a, self.b, self.c)
 
 	def surface_brightness(self, x):
 		"""
@@ -159,16 +118,11 @@ cdef class genPlummerProfile(StellarProfile):
 		if c == 0: #standard Plummer
 			return result * (1+x*x)**(-2)
 		elif c == 1:
-			return result * plummer1_func(x)
+			return result * cyfuncs.plummer1_func(x)
 		else:
 			return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=x*self.rh)
 
-cdef class DMProfile(Profile):
-	cdef double a
-	cdef double b
-	cdef double c
-	cdef double r0
-	cdef double rho0
+class DMProfile(Profile):
 	def __init__(self, **kwargs):
 		super(DMProfile, self).__init__(**kwargs)
 		if 'r0' not in kwargs:
@@ -194,7 +148,7 @@ cdef class DMProfile(Profile):
 		ymin = cos(np.radians(theta))
 		def integrand(z,y):
 			try:
-				return self.density(radius(z, y, Dprime))**2
+				return self.density(cyfuncs.radius(z, y, Dprime))**2
 			except (OverflowError, ZeroDivisionError):
 				return np.nan
 		def lim_u(y):
@@ -215,7 +169,7 @@ cdef class DMProfile(Profile):
 		cst = 4 * pi * self.r0 * Msun2kpc5_GeVcm5
 		return cst * self.rho0**2 * self.Jreduced(D, theta, rt, with_errs=False)
 
-cdef class ZhaoProfile(DMProfile):
+class ZhaoProfile(DMProfile):
 	def __init__(self, **kwargs):
 		super(ZhaoProfile, self).__init__(**kwargs)
 		#default to NFW
@@ -229,16 +183,16 @@ cdef class ZhaoProfile(DMProfile):
 
 	def density(self,x):
 		a, b, c = self.a, self.b, self.c
-		return zhao_func(x, a, b, c)
+		return cyfuncs.zhao_func(x, a, b, c)
 
 	def mass(self, x):
 		a, b, c = self.a, self.b, self.c
-		return mass_func(x, a, b, c)
+		return cyfuncs.mass_func(x, a, b, c)
 
 ##############################################################################
 #Anisotropy kernels
 
-cdef class AnisotropyKernel(object):
+class AnisotropyKernel(object):
 	"""
 	Mamon-Lokas (2005) Kernel functions for calculating the intrinsic
 	velocity dispersion for the following anistropy models:
@@ -247,32 +201,28 @@ cdef class AnisotropyKernel(object):
 	- constant Beta anistropy 
 	- Osipkov-Merritt anistropy profile
 	"""
-	cdef double ra
-	cdef double beta
-	#cdef list params
-	#cdef tuple __dict__
 	def __init__(self, **kwargs):
 		self.__dict__ = kwargs
 
-cdef class IsotropicKernel(AnisotropyKernel):
+class IsotropicKernel(AnisotropyKernel):
 	"""docstring for IsotropicKernel"""
 	def __init__(self, **kwargs):
 		super(IsotropicKernel,self).__init__(**kwargs)
 		self.params = []
 
 	def __call__(self, r, R):
-		return func_isotropic_kernel(r, R)
+		return cyfuncs.func_isotropic_kernel(r, R)
 
-cdef class RadialKernel(AnisotropyKernel):
+class RadialKernel(AnisotropyKernel):
 	"""docstring for RadialKernel"""
 	def __init__(self, **kwargs):
 		super(RadialKernel,self).__init__(**kwargs)
 		self.params = []
 
 	def __call__(self, r, R):
-		return func_radial_kernel(r, R)
+		return cyfuncs.func_radial_kernel(r, R)
 
-cdef class ConstBetaKernel(AnisotropyKernel):
+class ConstBetaKernel(AnisotropyKernel):
 	"""docstring for ConstBetaKernel"""
 	def __init__(self, **kwargs):
 		super(ConstBetaKernel,self).__init__(**kwargs)
@@ -281,9 +231,9 @@ cdef class ConstBetaKernel(AnisotropyKernel):
 
 	def __call__(self, r, R):
 		beta = self.beta
-		return func_constant_kernel(r, R, beta)
+		return cyfuncs.func_constant_kernel(r, R, beta)
 
-cdef class OMKernel(AnisotropyKernel):
+class OMKernel(AnisotropyKernel):
 	"""docstring for OMKernel"""
 	def __init__(self, **kwargs):
 		super(OMKernel,self).__init__(**kwargs)
@@ -292,7 +242,7 @@ cdef class OMKernel(AnisotropyKernel):
 
 	def __call__(self, r, R):
 		ra = self.ra
-		return func_OM_kernel(r, R, ra)
+		return cyfuncs.func_OM_kernel(r, R, ra)
 
 ##############################################################################
 #Helper functions
