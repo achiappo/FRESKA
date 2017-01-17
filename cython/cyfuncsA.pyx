@@ -36,12 +36,12 @@ cpdef double _radius(double z, double y, double Dprime):
 	except (OverflowError, ZeroDivisionError):
 		return np.nan
 
-cpdef double _limu(double y, double rtprime, double Dprime):
+cpdef double _lim_u(double y, double rtprime, double Dprime):
 	bounds = [0, sqrt(rtprime**2 - Dprime**2*(1-y*y))]
 	cdef array.array bounds_arr = array.array('d', bounds)
 	return bounds_arr
 
-cpdef double _limy(double ymin):
+cpdef double _lim_y(double ymin):
 	bounds = [ymin,1.]
 	cdef array.array bounds_arr = array.array('d', bounds)
 	return bounds_arr
@@ -54,8 +54,8 @@ cpdef double _integrand(f_type density, double z, double y, double D):
 
 cpdef double integral(f_type density, double ymin, double rtprime, double Dprime):
 	integrand = lambda z, y : _integrand(density, z, y, Dprime)
-	lim_u = lambda y : _limu(y, rtprime, Dprime)
-	lim_y = lambda : _limy(ymin)
+	lim_u = lambda y : _lim_u(y, rtprime, Dprime)
+	lim_y = lambda : _lim_y(ymin)
 	res = nquad(integrand, ranges=[lim_u, lim_y], \
 				opts=[{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3},\
 						{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3}])

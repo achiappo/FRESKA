@@ -3,13 +3,22 @@ from scipy.special import betainc, hyp2f1, gamma
 from math import pi, atan, asin, sqrt
 import numpy as np
 
-# functions cythonized
+# cythonizable functions
+##############################################################################
+# stellar component
+
 def _inv_csch(double x):
 	# inverse hyperbolic cosecant (used for c* = 1 , non-Plum)
 	return np.log( np.sqrt( 1.+1./x/x ) + 1./x )
 
+def plummer0_func(double x) :
+	return 4. / 3. / (1.+x*x)**2
+
 def plummer1_func(double x) :
 	return ((2+x*x)*_inv_csch(x) - np.sqrt(1+x*x))/(1+x*x)**1.5
+
+##############################################################################
+# DM component
 
 def zhao_func(double x, double a, double b, double c):
 	try:

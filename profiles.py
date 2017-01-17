@@ -14,10 +14,10 @@ def plummer1_func(x) :
     return ((2+x2)*inv_csch(x) - np.sqrt(1+x2))/(1+x2)**1.5
 
 def zhao_func(x, a, b, c):
-	try:
-		return 1. / x**c / (1.+x**a)**((b-c) / a)
-	except (OverflowError, ZeroDivisionError):
-		return np.nan
+    try:
+	return 1. / x**c / (1.+x**a)**((b-c) / a)
+    except (OverflowError, ZeroDivisionError):
+	return np.nan
 
 ##############################################################################
 
@@ -114,7 +114,7 @@ class genPlummerProfile(StellarProfile):
         elif c == 1:
             return result * plummer1_func(x)
         else:
-        	return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=x*self.rh)
+       	    return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=x*self.rh)
 
 class DMProfile(Profile):
     def __init__(self, **kwargs):
@@ -143,18 +143,18 @@ class DMProfile(Profile):
         def radius(z,y):
             return sqrt( z*z + Dprime**2*(1-y*y)) 
         def integrand(z,y):
-        	try:
-        		return self.density(radius(z,y))**2
-        	except (OverflowError, ZeroDivisionError):
-        		return np.nan
+            try:
+        	return self.density(radius(z,y))**2
+            except (OverflowError, ZeroDivisionError):
+        	return np.nan
         def lim_u(y):
             return [0, sqrt(rtprime**2 - Dprime**2*(1-y*y))]
         def lim_y():
             return [ymin,1.]
 
         res = nquad(integrand, ranges=[lim_u, lim_y], \
-        			opts=[{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3},\
-        				{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3}])
+        	opts=[{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3},\
+        	{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3}])
         if with_errs:
             return res[0], res[1]
         else:
@@ -184,10 +184,10 @@ class  ZhaoProfile(DMProfile):
     def mass(self, x):
         a, b, c = self.a, self.b, self.c
         try:
-        	H = hyp2f1((3.-c)/a, (b-c)/a, (a-c+3.)/a, -x**a)
-        	return x**(3.-c) * H / (3.-c)
+            H = hyp2f1((3.-c)/a, (b-c)/a, (a-c+3.)/a, -x**a)
+            return x**(3.-c) * H / (3.-c)
         except (OverflowError, ZeroDivisionError):
-        	return np.nan
+            return np.nan
 
 ##############################################################################
 #Anisotropy kernels
@@ -205,39 +205,39 @@ class AnisotropyKernel(object):
         self.__dict__ = kwargs
 
 class IsotropicKernel(AnisotropyKernel):
-	"""docstring for IsotropicKernel"""
-	def __init__(self, **kwargs):
-		super(IsotropicKernel,self).__init__(**kwargs)
-		self.params = []
+    """docstring for IsotropicKernel"""
+    def __init__(self, **kwargs):
+	super(IsotropicKernel,self).__init__(**kwargs)
+	self.params = []
 
-	def __call__(self, r, R):
-		u = r / R
-		return sqrt(1.-u**(-2))
+    def __call__(self, r, R):
+	u = r / R
+	return sqrt(1.-u**(-2))
 
 class RadialKernel(AnisotropyKernel):
-	"""docstring for RadialKernel"""
-	def __init__(self, **kwargs):
-		super(RadialKernel,self).__init__(**kwargs)
-		self.params = []
+    """docstring for RadialKernel"""
+    def __init__(self, **kwargs):
+	super(RadialKernel,self).__init__(**kwargs)
+	self.params = []
 
-	def __call__(self, r, R):
-		u = r / R
-		return pi*u/4. - 0.5*sqrt(1. - 1./u/u) - u*asin(1./u)/2.
+    def __call__(self, r, R):
+	u = r / R
+	return pi*u/4. - 0.5*sqrt(1. - 1./u/u) - u*asin(1./u)/2.
 
 class ConstBetaKernel(AnisotropyKernel):
-	"""docstring for ConstBetaKernel"""
-	def __init__(self, **kwargs):
-		super(ConstBetaKernel,self).__init__(**kwargs)
-		self.beta = kwargs['beta'] if 'beta' in kwargs else 0.
-		self.params = ['beta']
+    """docstring for ConstBetaKernel"""
+    def __init__(self, **kwargs):
+	super(ConstBetaKernel,self).__init__(**kwargs)
+	self.beta = kwargs['beta'] if 'beta' in kwargs else 0.
+	self.params = ['beta']
 
-	def __call__(self, r, R):
-		u = r / R
-		beta = self.beta
-		ker1 = sqrt(1.-1./u/u) / (1.-2.*beta)
-		ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
-		ker3 = u**(2*beta-1) * (1.-betainc(1./u/u, beta+0.5, 0.5))
-		return ker1 + ker2 * ker3
+    def __call__(self, r, R):
+	u = r / R
+	beta = self.beta
+	ker1 = sqrt(1.-1./u/u) / (1.-2.*beta)
+	ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
+	ker3 = u**(2*beta-1) * (1.-betainc(1./u/u, beta+0.5, 0.5))
+	return ker1 + ker2 * ker3
 
 class OMKernel(AnisotropyKernel):
 	"""docstring for OMKernel"""

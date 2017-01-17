@@ -1,5 +1,4 @@
 from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
-from scipy.integrate import quad, nquad
 from math import pi, cos, sqrt
 import numpy as np
 import cyfuncsA

@@ -6,8 +6,8 @@ class LogLikelihood(object):
 		self.data = data
 		self.sigma = sigma
 		self.sigma.data = data # instruction to pass the data back to the SigmaLos object
-		self.free_pars = {'J':18}
 		self.numprocs = numprocs
+		self.free_pars = {'J':18}
 		self.cache = {}
 
 	def set_free(self, parname, **kwargs):

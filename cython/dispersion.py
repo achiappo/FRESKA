@@ -16,7 +16,7 @@ class SphericalJeansDispersion(object):
             self.kernel = anisotropy
         elif isinstance(anisotropy, str):
             self.kernel = build_kernel(anisotropy,**kwargs)
-        G=4.3e-6
+        G = 4.302e-6
         self.dwarf_props = dwarf_props
         self.cst = 8.*np.pi*G
         self.params = {'J':18} #dummy value
@@ -38,8 +38,8 @@ class SphericalJeansDispersion(object):
         if name.strip('ker_') in self.kernel.__dict__:
             setattr(self.kernel, name.strip('ker_'), value)
         if name == 'J':
-        	setattr(self, name, value)
-        	self.params[name] = value
+            setattr(self, name, value)
+            self.params[name] = value
         self._synch()
         
     def integrand(self, s, R, **kwargs):
@@ -52,18 +52,18 @@ class SphericalJeansDispersion(object):
 
     def compute(self, R):
         #called by a LogLike object
-        D = self.dwarf_props['D']
-        theta = self.dwarf_props['theta']
-        rt = self.dwarf_props['rt']
-        errs = self.dwarf_props['errs']
-        Jred = np.sqrt(self.dm.Jfactor(D, theta, rt, errs))
-        if np.isscalar(R):
-            integral, error = quad(self.integrand, R, np.inf, args=(R,))
-            sigma2 = integral / self.stellar.surface_brightness(R) / Jred
+        if any([getattr(self.dm,par)<0 for par in self.dm.params]):
+            return np.nan
         else:
-            sigma2 = np.zeros_like(R)
-            for i,rr in enumerate(R):
-                integral, error = quad(self.integrand, rr, np.inf, args=(rr,))
-                I_of_R = self.stellar.surface_brightness(rr)
-                sigma2[i] = integral / I_of_R / Jred
-        return sigma2 * self.dm.r0**3 * self.cst * np.power(10,self.J/2.)
+            Jred = np.sqrt(self.dm.Jfactor(**self.dwarf_props))
+            if np.isscalar(R):
+            	integral = quad(self.integrand, R, np.inf, args=(R,))[0]
+            	sigma2 = integral / self.stellar.surface_brightness(R) / Jred
+            else:
+            	sigma2 = np.zeros_like(R)
+            	for i,rr in enumerate(R):
+            		integral = quad(self.integrand, rr, np.inf, args=(rr,))[0]
+            		I_of_R = self.stellar.surface_brightness(rr)
+            		sigma2[i] = integral / I_of_R / Jred
+        	return sigma2 * self.dm.r0**3 * self.cst * np.power(10,self.J/2.)
+

@@ -1,28 +1,11 @@
 from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
-from scipy.special import betainc, kn, hyp2f1, gamma
+from scipy.special import betainc, hyp2f1, gamma
 from scipy.integrate import quad, nquad
 from math import pi, cos, atan, asin, sqrt
 import numpy as np
 import cyfuncs
 
 ##############################################################################
-# functions cythonized
-#def inv_csch(double x):
-#	# inverse hyperbolic cosecant (used for c* = 1 , non-Plum)
-#	return np.log(np.sqrt(1+x**-2.)+x**-1.)
-#
-#def plummer1_func(double x):
-#	x2 = x*x
-#	return ((2+x2)*inv_csch(x) - np.sqrt(1+x2))/(1+x2)**1.5
-#
-#def zhao_func(double x, double a, double b, double c):
-#	try:
-#		return 1. / x**c / (1.+x**a)**((b-c) / a)
-#	except (OverflowError, ZeroDivisionError):
-#		return np.nan
-
-##############################################################################
-
 
 class Profile(object):
 	"""
@@ -30,8 +13,6 @@ class Profile(object):
 	expected for both. The base class just loads the arguments passed at
 	instantiation.
 	"""
-	#cdef tuple __dict__
-	#cdef list params
 	def __init__(self, **kwargs):
 		self.__dict__ = kwargs
 
@@ -55,7 +36,7 @@ class StellarProfile(Profile):
 		self.rhoh = kwargs['rhoh'] if 'rhoh' in kwargs else 1
 		self.params = ['rh', 'rhoh']
 
-	def surface_brightness(self, *args, **kwargs):
+	def surface_brightness(self, **kwargs):
 		"""
 		Compute the surface brightness from the density, 
 		using the Abel transform
@@ -103,24 +84,25 @@ class genPlummerProfile(StellarProfile):
 		"""
 		return self.rhoh * cyfuncs.zhao_func(x, self.a, self.b, self.c)
 
-	def surface_brightness(self, x):
+	def surface_brightness(self, R):
 		"""
 		Return the analytical solution for the brightness profile of a 
 		Plummer density
-		input : x=R/rh
+		input : R
 		output : 
 		rhoh * rh * (1+x*x)**(-2) if c==0 ,
 		rhoh * rh * ((2+x**2)*inv_csch(x) - np.sqrt(1+x**2))/(1+x**2)**1.5 if c==1
 		otherwise, default to base class Abel integration.
 		"""
+		x=R/self.rh
 		result = self.rhoh * self.rh
 		c = self.c
 		if c == 0: #standard Plummer
-			return result * (1+x*x)**(-2)
+			return result * cyfuncs.plummer0_func(x)
 		elif c == 1:
 			return result * cyfuncs.plummer1_func(x)
 		else:
-			return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=x*self.rh)
+			return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=R)
 
 class DMProfile(Profile):
 	def __init__(self, **kwargs):
