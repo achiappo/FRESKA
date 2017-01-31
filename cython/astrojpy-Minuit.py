@@ -1,11 +1,16 @@
-import yaml
 import numpy as np
+from yaml import dump
+from math import log10
+import numpy as np
+
 from scipy.interpolate import interp1d as interp
 from scipy.optimize import minimize_scalar
+
 from profiles import build_profile, build_kernel
 from dispersion import SphericalJeansDispersion
 from likelihood import GaussianLikelihood
 from fitter import MinuitFitter
+
 
 ##############################################################################
 
@@ -28,13 +33,10 @@ dwarf_props = {'D':D, 'theta':theta, 'rt':np.inf, 'with_errs':False}
 Sigma = SphericalJeansDispersion(dm, st, kr, dwarf_props)
 
 LL = GaussianLikelihood([R, v, dv, 0.], Sigma)
-LL.set_free('dm_r0')
 LL.set_free('dm_a')
 LL.set_free('dm_b')
 LL.set_free('dm_c')
-
-global global_loglike
-global_loglike = LL
+LL.set_free('dm_r0')
 
 ##############################################################################
 
@@ -104,11 +106,5 @@ Jrho = float(10**minimize_scalar(minrho).x)
 ##############################################################################
 
 np.save('results/LikeJ',np.vstack( (J_new, interp_L(J_new) ) ) )
-yaml.dump( {'Nstars':R.size,
-			'Jmin':Jmin,
-			'rho':Jrho,
-			'r':Jr,
-			'a':Ja,
-			'b':Jb,
-			'c':Jc,
-			}, open('results/results.yaml','w') )
+dump( {'Nstars':R.size, 'Jmin':Jmin, 'rho':Jrho, 'r':Jr, 
+		'a':Ja, 'b':Jb, 'c':Jc }, open('results/results.yaml','w') )

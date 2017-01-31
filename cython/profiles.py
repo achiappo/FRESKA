@@ -94,7 +94,7 @@ class genPlummerProfile(StellarProfile):
 		rhoh * rh * ((2+x**2)*inv_csch(x) - np.sqrt(1+x**2))/(1+x**2)**1.5 if c==1
 		otherwise, default to base class Abel integration.
 		"""
-		x=R/self.rh
+		x = R/self.rh
 		result = self.rhoh * self.rh
 		c = self.c
 		if c == 0: #standard Plummer
@@ -105,6 +105,10 @@ class genPlummerProfile(StellarProfile):
 			return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=R)
 
 class DMProfile(Profile):
+	""" 
+	Base class for the DM profile
+	contains the generic formula for the J-factor calculation
+	"""
 	def __init__(self, **kwargs):
 		super(DMProfile, self).__init__(**kwargs)
 		if 'r0' not in kwargs:
@@ -128,19 +132,22 @@ class DMProfile(Profile):
 		Dprime = D/r0
 		rtprime = rt/r0
 		ymin = cos(np.radians(theta))
+
 		def integrand(z,y):
 			try:
 				return self.density(cyfuncs.radius(z, y, Dprime))**2
 			except (OverflowError, ZeroDivisionError):
 				return np.nan
+
 		def lim_u(y):
 			return [0, sqrt(rtprime**2 - Dprime**2*(1-y*y))]
+
 		def lim_y():
 			return [ymin,1.]
 
 		res = nquad(integrand, ranges=[lim_u, lim_y], \
-					opts=[{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3},\
-						{'limit':1000, 'epsabs':1.e-3, 'epsrel':1.e-3}])
+					opts=[{'limit':1000, 'epsabs':1.e-8, 'epsrel':1.e-8},\
+						  {'limit':1000, 'epsabs':1.e-8, 'epsrel':1.e-8}])
 		if with_errs:
 			return res[0], res[1]
 		else:
@@ -152,6 +159,10 @@ class DMProfile(Profile):
 		return cst * self.rho0**2 * self.Jreduced(D, theta, rt, with_errs=False)
 
 class ZhaoProfile(DMProfile):
+	"""
+	class for defining a DM density profile
+	belonging to the generic family of Zhao profiles
+	"""
 	def __init__(self, **kwargs):
 		super(ZhaoProfile, self).__init__(**kwargs)
 		#default to NFW
@@ -187,7 +198,10 @@ class AnisotropyKernel(object):
 		self.__dict__ = kwargs
 
 class IsotropicKernel(AnisotropyKernel):
-	"""docstring for IsotropicKernel"""
+	"""
+	Kernel function for the isotropic 
+	velocity distribution case
+	"""
 	def __init__(self, **kwargs):
 		super(IsotropicKernel,self).__init__(**kwargs)
 		self.params = []
@@ -196,7 +210,10 @@ class IsotropicKernel(AnisotropyKernel):
 		return cyfuncs.func_isotropic_kernel(r, R)
 
 class RadialKernel(AnisotropyKernel):
-	"""docstring for RadialKernel"""
+	"""
+	Kernel function for the radial 
+	velocity distribution case
+	"""
 	def __init__(self, **kwargs):
 		super(RadialKernel,self).__init__(**kwargs)
 		self.params = []
@@ -205,7 +222,10 @@ class RadialKernel(AnisotropyKernel):
 		return cyfuncs.func_radial_kernel(r, R)
 
 class ConstBetaKernel(AnisotropyKernel):
-	"""docstring for ConstBetaKernel"""
+	"""
+	Kernel function for the constant 
+	velocity anistropy case
+	"""
 	def __init__(self, **kwargs):
 		super(ConstBetaKernel,self).__init__(**kwargs)
 		self.beta = kwargs['beta'] if 'beta' in kwargs else 0.
@@ -216,7 +236,10 @@ class ConstBetaKernel(AnisotropyKernel):
 		return cyfuncs.func_constant_kernel(r, R, beta)
 
 class OMKernel(AnisotropyKernel):
-	"""docstring for OMKernel"""
+	"""
+	Kernel function for the Osipkov-Merritt varying
+	anisotropy case
+	"""
 	def __init__(self, **kwargs):
 		super(OMKernel,self).__init__(**kwargs)
 		self.ra = kwargs['ra'] if 'ra' in kwargs else 0.

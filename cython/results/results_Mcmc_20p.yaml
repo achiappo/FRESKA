@@ -1,0 +1,12 @@
+Jmin: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args: [f8, 0, 1]
+  state: !!python/tuple [3, <, null, null, null, -1, -1, 0]
+- !!binary |
+  OgnEhZqTMEA=
+Nstars: 715
+a: 0.24383861838160126
+b: 2.7859819405232944
+c: 0.17287821371540768
+r: 0.15116813916401872
+rho: 149127049191.05612

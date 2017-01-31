@@ -1,69 +1,76 @@
 import numpy as np
-from math import log10
-import pylab as plt
+
 from scipy.interpolate import interp1d as interp
 from scipy.optimize import brentq, minimize_scalar
+
 from profiles import build_profile, build_kernel
 from dispersion import SphericalJeansDispersion
 from likelihood import GaussianLikelihood
 from fitter import MinuitFitter
 
-directory = '/home/andrea/Desktop/work/DWARF/dsphsim/'
+directory = '/home/andrea/Desktop/work/DWARF/dsphsim/Ret2_data/'
 rh = 0.04
+rs = 0.757/2.163
 D = 39.81
 theta = 2*rh/D
-dm = build_profile('NFW')
-st = build_profile('plummer',**{'rh':rh}) # non-Plummer Stellar profile
-kr = build_kernel('iso') # isotropic kernel
+Jtrue = 16.7168
+
+dm = build_profile('NFW',r0=rs)
+st = build_profile('plummer',rh=rh)
+kr = build_kernel('iso')
+
 dwarf_props = {'D':D, 'theta':theta, 'rt':np.inf, 'with_errs':False}
 Sigma = SphericalJeansDispersion(dm, st, kr, dwarf_props)
 
-BF = np.zeros([100,2])
+Jmin = np.zeros([100])
+J1s = np.zeros([100,2])
+J2s = np.zeros([100,2])
+J3s = np.zeros([100,2])
+
+in1s,in2s,in3s = 0,0,0
+
 for i in range(100):
-    R, v = np.loadtxt(directory+'Ret2_data/dsph_%03d.txt'%i,usecols=(5, 9),unpack=True)
-    v = v[~np.isnan(v)]
-    R = R[~np.isnan(v)]
-    dv = np.ones_like(v)*2.
-    LL = GaussianLikelihood([R, v, dv, 0.], Sigma)
-    LL.set_free('dm_r0')
-    global global_loglike
-    global_loglike = LL
-    M = MinuitFitter(LL)
-    
-    # J
-    M.set_value('J',17)
-    M.set_error('J',0.01)
-    #M.set_fixed('J')
-    #M.set_bound('J',(15,22))
-    # r0
-    M.set_value('dm_r0',rh*2.)
-    M.set_error('dm_r0',0.01)
-    #M.set_bound('dm_r0',(R.min(),R.max()*100))
-    '''
-    LL.set_free('dm_a')
-    LL.set_free('dm_b')
-    LL.set_free('dm_c')
-        # a
-    M.set_value('dm_a',1.)
-    M.set_error('dm_a',0.01)
-    #M.set_bound('dm_a',(1e-10,10))
-    # b
-    M.set_value('dm_b',3.)
-    M.set_error('dm_b',0.01)
-    #M.set_bound('dm_b',(1e-10,10))
-    # c
-    M.set_value('dm_c',1.)
-    M.set_error('dm_c',0.01)
-    #M.set_bound('dm_c',(1e-10,10))
-    '''
-    M.set_minuit(**{'tol':1e4,'strategy':2})
-    Min = M.migrad_min()
-    BF[i] = Min[1][0]['value'],Min[1][1]['value']
+	R, v = np.loadtxt(directory+'dsph_%03d.txt'%(i+1),usecols=(5, 7),unpack=True)
+	vnan = ~np.isnan(v) 
+	v = v[vnan]
+	R = R[vnan]
+	dv = np.zeros_like(v)
+	LL = GaussianLikelihood([R, v, dv, 0.], Sigma)
 
-np.save('BF_Ret2_Vmean',BF)
+	J_array = np.linspace(16,18,30)
+	J_new = np.empty([0])
+	L_arr = np.empty([0])
 
-J = np.array([BF[i][0] for i in range(100)])
-rs = np.array([BF[i][1] for i in range(100)])
+	for J in J_array:
+		M = MinuitFitter(LL)
+		M.set_value('J',J)
+		M.set_fixed('J')
+		M.set_minuit()
+		#-----------------------------------------------
+		BF = M.migrad_min()
+		if BF[0]['is_valid']:
+			J_new = np.append(J_new,J)
+			L_arr = np.append(L_arr,BF[0]['fval'])
 
-print 'J = %.2f +- %.2f'%(J.mean(),J.std()/np.sqrt(J.size))
-print 'rs = %.2f +- %.2f'%(rs.mean(),rs.std()/np.sqrt(rs.size))
+	#####################################################################
+
+	interp_L = interp( J_new, L_arr-L_arr.min() )
+
+	eval_Like_J = np.linspace(J_new.min(), J_new.max(), 1e3)
+	min_Like_J = interp_L(eval_Like_J).min()
+	jmin = eval_Like_J[ np.where( interp_L(eval_Like_J) == min_Like_J )[0][0] ]
+	Jmin[i] = jmin
+
+	for n,c in enumerate([0.5,2.0,4.5]):
+		exec( 'J%is[i,0] = %g'%(n+1, brentq(lambda j : interp_L(j)-c, a=J_new.min(), b=jmin) ) )
+		exec( 'J%is[i,1] = %g'%(n+1, brentq(lambda j : interp_L(j)-c, a=jmin, b=J_new.max()) ) )
+
+	if J1s[i,0] < Jtrue < J1s[i,1] : in1s += 1
+	if J2s[i,0] < Jtrue < J2s[i,1] : in2s += 1
+	if J3s[i,0] < Jtrue < J3s[i,1] : in3s += 1
+
+print 'J = %g +- %g'%( Jmin.mean(), Jmin.std()/np.sqrt(Jmin.size) )
+
+print '1-sigma: ', in1s
+print '2-sigma: ', in2s
+print '3-sigma: ', in3s

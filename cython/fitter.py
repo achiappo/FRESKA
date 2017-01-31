@@ -37,9 +37,9 @@ class Fitter(object):
     	self._set_function()
 
 class MinuitFitter(Fitter):
-	"""docstring for MinuitFitter"""
-	def __init__(self, loglike):
-		super(MinuitFitter, self).__init__(loglike)
+	""" subclass for Minuit minimisation"""
+	def __init__(self, *args):
+		super(MinuitFitter, self).__init__(*args)
 		self.settings.update({'errordef':0.5,'print_level':0,'pedantic':False})
 
 	def set_fixed(self, parnames):
@@ -92,9 +92,9 @@ class MinuitFitter(Fitter):
 		return var_array, Like
 
 class McmcFitter(Fitter):
-	"""docstring for McmcFitter"""
-	def __init__(self, loglike):
-		super(McmcFitter, self).__init__(loglike)
+	""" subclass for MCMC minimisation"""
+	def __init__(self, *args):
+		super(McmcFitter, self).__init__(*args)
 
 #	def _set_MCMC(self):
 #		self.M = MCMC()
