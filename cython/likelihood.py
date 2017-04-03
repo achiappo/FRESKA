@@ -61,3 +61,20 @@ class GaussianLikelihood(LogLikelihood):
         S = dv**2 + self.sigma.compute(R) #this is an array like R array
         res = np.log(S) + ((v-vsys)**2)/S
         return res.sum() / 2.
+
+    def contour(self, J, r):
+    	R = self.data[0]
+    	v = self.data[1]
+    	dv = self.data[2]
+    	vsys = self.data[3]
+    	iscached, Scached = self._retrieve(r)
+    	if iscached:
+    		s = Scached
+    	else:
+    		self.sigma.setparams('J', 0)
+    		self.sigma.setparams('dm_r0', r)
+    		s = self.sigma.compute(R)
+    		self._store(s, r)
+    	S = dv**2 +  s * np.power(10, J/2.)
+    	res = np.log(S) + ((v-vsys)**2)/S
+    	return res.sum() / 2.

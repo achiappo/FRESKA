@@ -28,8 +28,8 @@ def zhao_func(double x, double a, double b, double c):
 
 def mass_func(double x, double a, double b, double c):
 	try:
-		H = hyp2f1((3.-c)/a, (b-c)/a, (a-c+3.)/a, -x**a)
-		return x**(3.-c) * H / (3.-c)
+		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+		return x**(3-c) * F / (3-c)
 	except (OverflowError, ZeroDivisionError):
 		return np.nan
 
@@ -54,7 +54,7 @@ def func_constant_kernel(double r, double R, double beta):
 	u = r / R
 	ker1 = sqrt( 1.-u**(-2.) ) / (1.-2.*beta)
 	ker2 = sqrt(pi)/2. * gamma(beta-0.5)/gamma(beta) * (1.5-beta)
-	ker3 = u**(2*beta-1) * (1.-betainc( u**(-2), beta+0.5, 0.5) )
+	ker3 = u**( 2*beta-1. ) * ( 1.-betainc( u**(-2), beta+0.5, 0.5) )
 	return ker1 + ker2 * ker3
 
 def func_OM_kernel(double r, double R, double ra):
