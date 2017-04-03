@@ -1,0 +1,12 @@
+Jmin: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args: [f8, 0, 1]
+  state: !!python/tuple [3, <, null, null, null, -1, -1, 0]
+- !!binary |
+  H2GzHPARMUA=
+Nstars: 715
+a: 363.72510588863923
+b: 1.55552914077749
+c: 1.197372797495991
+r: 0.10719411736797053
+rho: 869136119302.1968

@@ -1,0 +1,11 @@
+Jmin: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args: [f8, 0, 1]
+  state: !!python/tuple [3, <, null, null, null, -1, -1, 0]
+- !!binary |
+  LtScBOJCMEA=
+Nstars: 715
+a: 0.46285083988298314
+b: 2.5399721094910976
+c: 0.5101382529902717
+r: 0.13494884582446698
