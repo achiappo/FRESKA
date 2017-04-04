@@ -28,14 +28,14 @@ def zhao_func(double x, double a, double b, double c):
 
 def mass_func(double x, double a, double b, double c):
 	try:
-		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
 		return x**(3-c) * F / (3-c)
 	except (OverflowError, ZeroDivisionError):
 		return np.nan
 
 def radius(double z, double y, double Dprime):
 	try:
-		return sqrt( z*z + Dprime*Dprime*(1-y*y))
+		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
 	except (OverflowError, ZeroDivisionError):
 		return np.nan
 
