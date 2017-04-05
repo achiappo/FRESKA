@@ -55,7 +55,7 @@ class SphericalJeansDispersion(object):
         if any([getattr(self.dm,par)<0 for par in self.dm.params]):
             return np.nan
         else:
-            Jred = np.sqrt(self.dm.Jfactor(**self.dwarf_props))
+            Jred = np.sqrt( self.dm.Jfactor( **self.dwarf_props ) )
             if np.isscalar(R):
             	integral = quad(self.integrand, R, np.inf, args=(R,))[0]
             	sigma2 = integral / self.stellar.surface_brightness(R) / Jred

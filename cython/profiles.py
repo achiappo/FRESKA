@@ -156,7 +156,13 @@ class DMProfile(Profile):
 	def Jfactor(self, D, theta, rt, with_errs=False):
 		Msun2kpc5_GeVcm5 = 4463954.894661358
 		cst = 4 * pi * self.r0 * Msun2kpc5_GeVcm5
-		return cst * self.rho0**2 * self.Jreduced(D, theta, rt, with_errs=False)
+		Jred = self.Jreduced(D, theta, rt, with_errs)
+		if with_errs:
+			res = cst * self.rho0**2 * Jred[0]
+			err = cst * self.rho0**2 * Jred[1]
+			return res, err
+		else:
+			return cst * self.rho0**2 * Jred
 
 class ZhaoProfile(DMProfile):
 	"""
