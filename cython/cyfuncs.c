@@ -1329,8 +1329,8 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
   double __pyx_t_6;
   PyObject *__pyx_t_7 = NULL;
   PyObject *__pyx_t_8 = NULL;
-  int __pyx_t_9;
-  PyObject *__pyx_t_10 = NULL;
+  PyObject *__pyx_t_9 = NULL;
+  int __pyx_t_10;
   PyObject *__pyx_t_11 = NULL;
   PyObject *__pyx_t_12 = NULL;
   __Pyx_RefNannySetupContext("zhao_func", 0);
@@ -1340,7 +1340,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
  * def zhao_func(double x, double a, double b, double c):
  * 	try:             # <<<<<<<<<<<<<<
  * 		return 1. / x**c / (1.+x**a)**((b-c) / a)
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  */
   {
     __Pyx_PyThreadState_declare
@@ -1355,7 +1355,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
  * def zhao_func(double x, double a, double b, double c):
  * 	try:
  * 		return 1. / x**c / (1.+x**a)**((b-c) / a)             # <<<<<<<<<<<<<<
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  * 		return np.nan
  */
       __Pyx_XDECREF(__pyx_r);
@@ -1386,7 +1386,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
  * def zhao_func(double x, double a, double b, double c):
  * 	try:             # <<<<<<<<<<<<<<
  * 		return 1. / x**c / (1.+x**a)**((b-c) / a)
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  */
     }
     __pyx_L3_error:;
@@ -1396,7 +1396,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
     /* "cyfuncs.pyx":26
  * 	try:
  * 		return 1. / x**c / (1.+x**a)**((b-c) / a)
- * 	except (OverflowError, ZeroDivisionError):             # <<<<<<<<<<<<<<
+ * 	except (OverflowError, ZeroDivisionError, ValueError):             # <<<<<<<<<<<<<<
  * 		return np.nan
  * 
  */
@@ -1404,19 +1404,22 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
     __Pyx_GOTREF(__pyx_t_7);
     __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_ZeroDivisionError); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 26, __pyx_L5_except_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_9 = __Pyx_PyErr_ExceptionMatches(__pyx_t_7) || __Pyx_PyErr_ExceptionMatches(__pyx_t_8);
+    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_ValueError); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 26, __pyx_L5_except_error)
+    __Pyx_GOTREF(__pyx_t_9);
+    __pyx_t_10 = __Pyx_PyErr_ExceptionMatches(__pyx_t_7) || __Pyx_PyErr_ExceptionMatches(__pyx_t_8) || __Pyx_PyErr_ExceptionMatches(__pyx_t_9);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    if (__pyx_t_9) {
+    __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+    if (__pyx_t_10) {
       __Pyx_AddTraceback("cyfuncs.zhao_func", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_8, &__pyx_t_7, &__pyx_t_10) < 0) __PYX_ERR(0, 26, __pyx_L5_except_error)
+      if (__Pyx_GetException(&__pyx_t_9, &__pyx_t_8, &__pyx_t_7) < 0) __PYX_ERR(0, 26, __pyx_L5_except_error)
+      __Pyx_GOTREF(__pyx_t_9);
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_GOTREF(__pyx_t_7);
-      __Pyx_GOTREF(__pyx_t_10);
 
       /* "cyfuncs.pyx":27
  * 		return 1. / x**c / (1.+x**a)**((b-c) / a)
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  * 		return np.nan             # <<<<<<<<<<<<<<
  * 
  * def mass_func(double x, double a, double b, double c):
@@ -1431,7 +1434,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
       __pyx_t_12 = 0;
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
+      __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       goto __pyx_L6_except_return;
     }
     goto __pyx_L5_except_error;
@@ -1442,7 +1445,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
  * def zhao_func(double x, double a, double b, double c):
  * 	try:             # <<<<<<<<<<<<<<
  * 		return 1. / x**c / (1.+x**a)**((b-c) / a)
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  */
     __Pyx_PyThreadState_assign
     __Pyx_XGIVEREF(__pyx_t_1);
@@ -1478,7 +1481,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_8);
-  __Pyx_XDECREF(__pyx_t_10);
+  __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_11);
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_AddTraceback("cyfuncs.zhao_func", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -1494,7 +1497,7 @@ static PyObject *__pyx_pf_7cyfuncs_6zhao_func(CYTHON_UNUSED PyObject *__pyx_self
  * 
  * def mass_func(double x, double a, double b, double c):             # <<<<<<<<<<<<<<
  * 	try:
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  */
 
 /* Python wrapper */
@@ -1598,7 +1601,7 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
  * 
  * def mass_func(double x, double a, double b, double c):
  * 	try:             # <<<<<<<<<<<<<<
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  * 		return x**(3-c) * F / (3-c)
  */
   {
@@ -1613,9 +1616,9 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
       /* "cyfuncs.pyx":31
  * def mass_func(double x, double a, double b, double c):
  * 	try:
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)             # <<<<<<<<<<<<<<
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )             # <<<<<<<<<<<<<<
  * 		return x**(3-c) * F / (3-c)
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  */
       __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_hyp2f1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 31, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_5);
@@ -1680,9 +1683,9 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
 
       /* "cyfuncs.pyx":32
  * 	try:
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  * 		return x**(3-c) * F / (3-c)             # <<<<<<<<<<<<<<
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  * 		return np.nan
  */
       __Pyx_XDECREF(__pyx_r);
@@ -1705,7 +1708,7 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
  * 
  * def mass_func(double x, double a, double b, double c):
  * 	try:             # <<<<<<<<<<<<<<
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  * 		return x**(3-c) * F / (3-c)
  */
     }
@@ -1721,9 +1724,9 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
     __Pyx_XDECREF(__pyx_t_13); __pyx_t_13 = 0;
 
     /* "cyfuncs.pyx":33
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  * 		return x**(3-c) * F / (3-c)
- * 	except (OverflowError, ZeroDivisionError):             # <<<<<<<<<<<<<<
+ * 	except (OverflowError, ZeroDivisionError, ValueError):             # <<<<<<<<<<<<<<
  * 		return np.nan
  * 
  */
@@ -1731,19 +1734,22 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
     __Pyx_GOTREF(__pyx_t_13);
     __pyx_t_4 = __Pyx_GetModuleGlobalName(__pyx_n_s_ZeroDivisionError); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 33, __pyx_L5_except_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_14 = __Pyx_PyErr_ExceptionMatches(__pyx_t_13) || __Pyx_PyErr_ExceptionMatches(__pyx_t_4);
+    __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_ValueError); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 33, __pyx_L5_except_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_14 = __Pyx_PyErr_ExceptionMatches(__pyx_t_13) || __Pyx_PyErr_ExceptionMatches(__pyx_t_4) || __Pyx_PyErr_ExceptionMatches(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     if (__pyx_t_14) {
       __Pyx_AddTraceback("cyfuncs.mass_func", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_13, &__pyx_t_5) < 0) __PYX_ERR(0, 33, __pyx_L5_except_error)
+      if (__Pyx_GetException(&__pyx_t_5, &__pyx_t_4, &__pyx_t_13) < 0) __PYX_ERR(0, 33, __pyx_L5_except_error)
+      __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_GOTREF(__pyx_t_13);
-      __Pyx_GOTREF(__pyx_t_5);
 
       /* "cyfuncs.pyx":34
  * 		return x**(3-c) * F / (3-c)
- * 	except (OverflowError, ZeroDivisionError):
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  * 		return np.nan             # <<<<<<<<<<<<<<
  * 
  * def radius(double z, double y, double Dprime):
@@ -1768,7 +1774,7 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
  * 
  * def mass_func(double x, double a, double b, double c):
  * 	try:             # <<<<<<<<<<<<<<
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  * 		return x**(3-c) * F / (3-c)
  */
     __Pyx_PyThreadState_assign
@@ -1798,7 +1804,7 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
  * 
  * def mass_func(double x, double a, double b, double c):             # <<<<<<<<<<<<<<
  * 	try:
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  */
 
   /* function exit code */
@@ -1825,7 +1831,7 @@ static PyObject *__pyx_pf_7cyfuncs_8mass_func(CYTHON_UNUSED PyObject *__pyx_self
  * 
  * def radius(double z, double y, double Dprime):             # <<<<<<<<<<<<<<
  * 	try:
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
  */
 
 /* Python wrapper */
@@ -1914,8 +1920,8 @@ static PyObject *__pyx_pf_7cyfuncs_10radius(CYTHON_UNUSED PyObject *__pyx_self, 
  * 
  * def radius(double z, double y, double Dprime):
  * 	try:             # <<<<<<<<<<<<<<
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
- * 	except (OverflowError, ZeroDivisionError):
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  */
   {
     __Pyx_PyThreadState_declare
@@ -1929,8 +1935,8 @@ static PyObject *__pyx_pf_7cyfuncs_10radius(CYTHON_UNUSED PyObject *__pyx_self, 
       /* "cyfuncs.pyx":38
  * def radius(double z, double y, double Dprime):
  * 	try:
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))             # <<<<<<<<<<<<<<
- * 	except (OverflowError, ZeroDivisionError):
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )             # <<<<<<<<<<<<<<
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  * 		return np.nan
  */
       __Pyx_XDECREF(__pyx_r);
@@ -1972,8 +1978,8 @@ static PyObject *__pyx_pf_7cyfuncs_10radius(CYTHON_UNUSED PyObject *__pyx_self, 
  * 
  * def radius(double z, double y, double Dprime):
  * 	try:             # <<<<<<<<<<<<<<
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
- * 	except (OverflowError, ZeroDivisionError):
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  */
     }
     __pyx_L3_error:;
@@ -1986,8 +1992,8 @@ static PyObject *__pyx_pf_7cyfuncs_10radius(CYTHON_UNUSED PyObject *__pyx_self, 
 
     /* "cyfuncs.pyx":39
  * 	try:
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
- * 	except (OverflowError, ZeroDivisionError):             # <<<<<<<<<<<<<<
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
+ * 	except (OverflowError, ZeroDivisionError, ValueError):             # <<<<<<<<<<<<<<
  * 		return np.nan
  * 
  */
@@ -1995,19 +2001,22 @@ static PyObject *__pyx_pf_7cyfuncs_10radius(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = __Pyx_GetModuleGlobalName(__pyx_n_s_ZeroDivisionError); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 39, __pyx_L5_except_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_9 = __Pyx_PyErr_ExceptionMatches(__pyx_t_4) || __Pyx_PyErr_ExceptionMatches(__pyx_t_5);
+    __pyx_t_8 = __Pyx_GetModuleGlobalName(__pyx_n_s_ValueError); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 39, __pyx_L5_except_error)
+    __Pyx_GOTREF(__pyx_t_8);
+    __pyx_t_9 = __Pyx_PyErr_ExceptionMatches(__pyx_t_4) || __Pyx_PyErr_ExceptionMatches(__pyx_t_5) || __Pyx_PyErr_ExceptionMatches(__pyx_t_8);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     if (__pyx_t_9) {
       __Pyx_AddTraceback("cyfuncs.radius", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_5, &__pyx_t_4, &__pyx_t_8) < 0) __PYX_ERR(0, 39, __pyx_L5_except_error)
+      if (__Pyx_GetException(&__pyx_t_8, &__pyx_t_5, &__pyx_t_4) < 0) __PYX_ERR(0, 39, __pyx_L5_except_error)
+      __Pyx_GOTREF(__pyx_t_8);
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GOTREF(__pyx_t_4);
-      __Pyx_GOTREF(__pyx_t_8);
 
       /* "cyfuncs.pyx":40
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
- * 	except (OverflowError, ZeroDivisionError):
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  * 		return np.nan             # <<<<<<<<<<<<<<
  * 
  * ##############################################################################
@@ -2032,8 +2041,8 @@ static PyObject *__pyx_pf_7cyfuncs_10radius(CYTHON_UNUSED PyObject *__pyx_self, 
  * 
  * def radius(double z, double y, double Dprime):
  * 	try:             # <<<<<<<<<<<<<<
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
- * 	except (OverflowError, ZeroDivisionError):
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
+ * 	except (OverflowError, ZeroDivisionError, ValueError):
  */
     __Pyx_PyThreadState_assign
     __Pyx_XGIVEREF(__pyx_t_1);
@@ -2062,7 +2071,7 @@ static PyObject *__pyx_pf_7cyfuncs_10radius(CYTHON_UNUSED PyObject *__pyx_self, 
  * 
  * def radius(double z, double y, double Dprime):             # <<<<<<<<<<<<<<
  * 	try:
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
  */
 
   /* function exit code */
@@ -3276,7 +3285,7 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * def mass_func(double x, double a, double b, double c):             # <<<<<<<<<<<<<<
  * 	try:
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  */
   __pyx_tuple__9 = PyTuple_Pack(5, __pyx_n_s_x, __pyx_n_s_a, __pyx_n_s_b, __pyx_n_s_c, __pyx_n_s_F); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__9);
@@ -3288,7 +3297,7 @@ static int __Pyx_InitCachedConstants(void) {
  * 
  * def radius(double z, double y, double Dprime):             # <<<<<<<<<<<<<<
  * 	try:
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
  */
   __pyx_tuple__11 = PyTuple_Pack(3, __pyx_n_s_z, __pyx_n_s_y, __pyx_n_s_Dprime); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
@@ -3634,7 +3643,7 @@ PyMODINIT_FUNC PyInit_cyfuncs(void)
  * 
  * def mass_func(double x, double a, double b, double c):             # <<<<<<<<<<<<<<
  * 	try:
- * 		F = hyp2f1((3-c)/a, (b-c)/a, (a-c+3)/a, -x**a)
+ * 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
  */
   __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_7cyfuncs_9mass_func, NULL, __pyx_n_s_cyfuncs); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -3646,7 +3655,7 @@ PyMODINIT_FUNC PyInit_cyfuncs(void)
  * 
  * def radius(double z, double y, double Dprime):             # <<<<<<<<<<<<<<
  * 	try:
- * 		return sqrt( z*z + Dprime*Dprime*(1-y*y))
+ * 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
  */
   __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_7cyfuncs_11radius, NULL, __pyx_n_s_cyfuncs); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 36, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);

@@ -61,6 +61,7 @@ class GaussianLikelihood(LogLikelihood):
         S = dv**2 + self.sigma.compute(R) #this is an array like R array
         res = np.log(S) + ((v-vsys)**2)/S
         return res.sum() / 2.
+        #return np.exp( -0.5*((v-vsys)**2)/S ) / np.sqrt( 2*np.pi*S )
 
     def contour(self, J, r):
     	R = self.data[0]

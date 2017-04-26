@@ -23,20 +23,20 @@ def plummer1_func(double x) :
 def zhao_func(double x, double a, double b, double c):
 	try:
 		return 1. / x**c / (1.+x**a)**((b-c) / a)
-	except (OverflowError, ZeroDivisionError):
+	except (OverflowError, ZeroDivisionError, ValueError):
 		return np.nan
 
 def mass_func(double x, double a, double b, double c):
 	try:
 		F = hyp2f1( (3-c)/a, (b-c)/a, (a-c+3)/a, -x**a )
 		return x**(3-c) * F / (3-c)
-	except (OverflowError, ZeroDivisionError):
+	except (OverflowError, ZeroDivisionError, ValueError):
 		return np.nan
 
 def radius(double z, double y, double Dprime):
 	try:
 		return sqrt( z*z + Dprime*Dprime*(1-y*y) )
-	except (OverflowError, ZeroDivisionError):
+	except (OverflowError, ZeroDivisionError, ValueError):
 		return np.nan
 
 ##############################################################################

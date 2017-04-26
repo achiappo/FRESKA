@@ -140,10 +140,10 @@ class DMProfile(Profile):
 				return np.nan
 
 		def lim_u(y):
-			return [0, sqrt(rtprime**2 - Dprime**2*(1-y*y))]
+			return [ 0., sqrt( rtprime*rtprime - Dprime*Dprime*(1-y*y) ) ]
 
 		def lim_y():
-			return [ymin,1.]
+			return [ ymin, 1. ]
 
 		res = nquad(integrand, ranges=[lim_u, lim_y], \
 					opts=[{'limit':1000, 'epsabs':1.e-8, 'epsrel':1.e-8},\
@@ -158,9 +158,7 @@ class DMProfile(Profile):
 		cst = 4 * pi * self.r0 * Msun2kpc5_GeVcm5
 		Jred = self.Jreduced(D, theta, rt, with_errs)
 		if with_errs:
-			res = cst * self.rho0**2 * Jred[0]
-			err = cst * self.rho0**2 * Jred[1]
-			return res, err
+			return cst * self.rho0**2 * Jred[0], Jred[1]
 		else:
 			return cst * self.rho0**2 * Jred
 
@@ -182,7 +180,14 @@ class ZhaoProfile(DMProfile):
 
 	def density(self,x):
 		a, b, c = self.a, self.b, self.c
-		return cyfuncs.zhao_func(x, a, b, c)
+		rhosat = 1e19
+		if c>1e-5:
+			if x > self.r0*(1e-10)**(1/c):
+				return cyfuncs.zhao_func(x, a, b, c)
+			else:
+				return rhosat
+		else:
+			return cyfuncs.zhao_func(x, a, b, 0.)
 
 	def mass(self, x):
 		a, b, c = self.a, self.b, self.c
