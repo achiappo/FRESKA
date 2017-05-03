@@ -146,8 +146,8 @@ class DMProfile(Profile):
 			return [ ymin, 1. ]
 
 		res = nquad(integrand, ranges=[lim_u, lim_y], \
-					opts=[{'limit':1000, 'epsabs':1.e-8, 'epsrel':1.e-8},\
-						  {'limit':1000, 'epsabs':1.e-8, 'epsrel':1.e-8}])
+					opts=[{'limit':1000, 'epsabs':1.e-6, 'epsrel':1.e-8},\
+						  {'limit':1000, 'epsabs':1.e-6, 'epsrel':1.e-8}])
 		if with_errs:
 			return res[0], res[1]
 		else:
