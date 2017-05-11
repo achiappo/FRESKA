@@ -5,7 +5,7 @@ import sys
 
 class SphericalJeansDispersion(object):
     def __init__(self, dm, stellar, anisotropy, dwarf_props, **kwargs):
-    	if isinstance(dm, DMProfile):
+        if isinstance(dm, DMProfile):
             self.dm = dm
         elif isinstance(dm, str):
             self.dm = build_profile(dm,**kwargs)
@@ -66,12 +66,12 @@ class SphericalJeansDispersion(object):
             else:
                 Jred = np.sqrt( Jreduced )
             if np.isscalar(R):
-            	integral = quad(self.integrand, R, np.inf, args=(R,))[0]
-            	sigma2 = integral / self.stellar.surface_brightness(R) / Jred
+                integral = quad(self.integrand, R, np.inf, args=(R,))[0]
+                sigma2 = integral / self.stellar.surface_brightness(R) / Jred
             else:
-            	sigma2 = np.zeros_like(R)
-            	for i,rr in enumerate(R):
-            		integral = quad(self.integrand, rr, np.inf, args=(rr,))[0]
-            		I_of_R = self.stellar.surface_brightness(rr)
-            		sigma2[i] = integral / I_of_R / Jred
+                sigma2 = np.zeros_like(R)
+                for i,rr in enumerate(R):
+                    integral = quad(self.integrand, rr, np.inf, args=(rr,))[0]
+                    I_of_R = self.stellar.surface_brightness(rr)
+                    sigma2[i] = integral / I_of_R / Jred
             return sigma2 * self.dm.r0**3 * self.cst * np.power(10, self.J/2.)
