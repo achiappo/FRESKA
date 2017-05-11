@@ -1,5 +1,6 @@
 import numpy as np
 from exceptions import ValueError
+import sys
 
 class LogLikelihood(object):
     def __init__(self, data, sigma, numprocs=1):
@@ -33,13 +34,14 @@ class LogLikelihood(object):
 
     def __call__(self, *par_array):
         if np.any(np.isnan(par_array)):
-            return np.nan
+            return sys.float_info.max
         else:
             iscached, Scached = self._retrieve(*par_array)
             if iscached:
                 S = Scached
             else:
                 for i,key in enumerate(self.free_pars.keys()):
+                    self.free_pars[key] = par_array[i]
                     self.sigma.setparams(key, par_array[i])
                 S = self.compute()
                 #self._store(S, *par_array)
@@ -48,33 +50,30 @@ class LogLikelihood(object):
 class GaussianLikelihood(LogLikelihood):
     def __init__(self, *args):
         super(GaussianLikelihood, self).__init__(*args)
-
+        self.R = self.data[0] #['R']
+        self.v = self.data[1] #['v']
+        self.dv2 = self.data[2]**2 #['dv']
+        self.vsys = self.data[3]
+        self.Dv2 = (self.v-self.vsys)**2
+        
     def compute(self):
-        R = self.data[0]#['R']
-        v = self.data[1]#['v']
-        dv = self.data[2]#['dv']
-        vsys = self.data[3]
         #need to properly deal with parallelizing over R and possibly J
         #note : the fitter below uses fit to fit for J
         #in case of an array of Js, one should write another scan function
         #so it might be that here only the R parallelization is in order
-        S = dv**2 + self.sigma.compute(R) #this is an array like R array
-        res = np.log(S) + ((v-vsys)**2)/S
+        S = self.dv2 + self.sigma.compute(self.R) #this is an array like R array
+        res = np.log(S) + self.Dv2/S
         return res.sum() / 2.
 
     def contour(self, J, r):
-        R = self.data[0]
-        v = self.data[1]
-        dv = self.data[2]
-        vsys = self.data[3]
         iscached, Scached = self._retrieve(r)
         if iscached:
             s = Scached
         else:
             self.sigma.setparams('J', 0)
             self.sigma.setparams('dm_r0', r)
-            s = self.sigma.compute(R)
+            s = self.sigma.compute(self.R)
             self._store(s, r)
-        S = dv**2 +  s * np.power(10, J/2.)
-        res = np.log(S) + ((v-vsys)**2)/S
+        S = self.dv2 +  s * np.power(10, J/2.)
+        res = np.log(S) + self.Dv2/S
         return res.sum() / 2.
