@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.integrate import quad
 from profiles import DMProfile, StellarProfile, AnisotropyKernel
+import sys
 
 class SphericalJeansDispersion(object):
     def __init__(self, dm, stellar, anisotropy, dwarf_props, **kwargs):
@@ -20,6 +21,7 @@ class SphericalJeansDispersion(object):
         self.dwarf_props = dwarf_props
         self.cst = 8.*np.pi*G
         self.params = {'J':18} #dummy value
+        setattr(self, 'J', 18)
         self._synch()
         
     def _synch(self):
@@ -53,7 +55,7 @@ class SphericalJeansDispersion(object):
     def compute(self, R):
         #called by a LogLike object
         if any([getattr(self.dm,par)<0 for par in self.dm.params]):
-            return np.nan
+            return sys.float_info.max
         else:
             Jreduced = self.dm.Jfactor( **self.dwarf_props )
             if 'with_errs' in self.dwarf_props:
