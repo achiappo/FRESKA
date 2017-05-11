@@ -57,21 +57,24 @@ class SphericalJeansDispersion(object):
         if any([getattr(self.dm,par)<0 for par in self.dm.params]):
             return sys.float_info.max
         else:
-            Jreduced = self.dm.Jfactor( **self.dwarf_props )
-            if 'with_errs' in self.dwarf_props:
-                if self.dwarf_props['with_errs']:
-                    Jred = np.sqrt( Jreduced[0] )
-                else:
-                    Jred = np.sqrt( Jreduced )
+            Jreduced = self.dm.cached_Jreduced( **self.dwarf_props )
+            if 'with_errs' in self.dwarf_props and\
+              self.dwarf_props['with_errs']==True:
+                Jred = Jreduced[0]
+                Jerr = Jreduced[1]
+                #print self.dm.r0, Jred, Jerr
             else:
-                Jred = np.sqrt( Jreduced )
+                Jred = Jreduced
+                
             if np.isscalar(R):
                 integral = quad(self.integrand, R, np.inf, args=(R,))[0]
-                sigma2 = integral / self.stellar.surface_brightness(R) / Jred
+                sigma2 = integral / self.stellar.surface_brightness(R) / np.sqrt(Jred)
             else:
                 sigma2 = np.zeros_like(R)
                 for i,rr in enumerate(R):
                     integral = quad(self.integrand, rr, np.inf, args=(rr,))[0]
                     I_of_R = self.stellar.surface_brightness(rr)
-                    sigma2[i] = integral / I_of_R / Jred
-            return sigma2 * self.dm.r0**3 * self.cst * np.power(10, self.J/2.)
+                    sigma2[i] = integral / I_of_R / np.sqrt(Jred)
+                    
+            cst = self.cst/np.sqrt(self.dm.Jcst())
+            return sigma2 * self.dm.r0**3 * cst * np.power(10, self.J/2.)
