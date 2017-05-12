@@ -1,0 +1,41 @@
+# Select a Likelihood
+
+'Like'  :
+ 'name' : 'unbinned'
+
+# Select a dark matter profile to adopt and its parameters
+
+'DM' :
+ 'name' : 'Zhao'
+
+ 'a' :
+  'val' : 1
+  'free': False
+
+ 'b' :
+  'val' : 1
+  'free': False
+
+ 'c' :
+  'val' : 3
+  'free': True
+
+#--------------------------------------------------------------------
+# Select a surface brightness profile
+
+'Stellar' :
+ 'name' : 'Plummer'
+
+ 'rh' :
+  'val' : 0.1
+  'free': False
+
+#--------------------------------------------------------------------
+# Select a velocity distribution anisotropy
+
+'anisotropy' :
+ 'name' : 'CA'
+
+ 'beta' :
+  'val' : -1
+  'free' : True

@@ -135,8 +135,6 @@ class DMProfile(Profile):
                 J = self.Jreduced(D, theta, rt, with_errs)
                 self.__cached_Jreduced[self.r0] = J
         return J
-            
-        
         
     def Jreduced(self, D, theta, rt, with_errs=False):
         """
