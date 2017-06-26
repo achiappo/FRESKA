@@ -119,6 +119,7 @@ class DMProfile(Profile):
         self.__cached_Jreduced = {}
         
     def cached_Jreduced(self, D, theta, rt, with_errs=False):
+        cache_params = tuple(getattr(self, par) for par in self.params_Jreduced)
         if (not hasattr(self,'D')) or\
           (self.D!=D or self.theta!=theta or self.rt!=rt):
             self.D = D
@@ -126,14 +127,14 @@ class DMProfile(Profile):
             self.rt = rt
             self.__cached_Jreduced.clear()
             J = self.Jreduced(D, theta, rt, with_errs)
-            self.__cached_Jreduced[self.r0] = J
+            self.__cached_Jreduced[cache_params] = J
         else :
-            if self.r0 in self.__cached_Jreduced.keys():
-                J = self.__cached_Jreduced[self.r0]
+            if cache_params in self.__cached_Jreduced.keys():
+                J = self.__cached_Jreduced[cache_params]
                 return J
             else:
                 J = self.Jreduced(D, theta, rt, with_errs)
-                self.__cached_Jreduced[self.r0] = J
+                self.__cached_Jreduced[cache_params] = J
         return J
         
     def Jreduced(self, D, theta, rt, with_errs=False):
@@ -201,6 +202,7 @@ class ZhaoProfile(DMProfile):
         if 'c' not in kwargs:
             self.c = 1.
         self.params += ['a','b','c']
+        self.params_Jreduced = [par for par in self.params if par != 'rho0']
 
     def density(self,x):
         a, b, c = self.a, self.b, self.c
@@ -277,11 +279,11 @@ class OMKernel(AnisotropyKernel):
     """
     def __init__(self, **kwargs):
         super(OMKernel,self).__init__(**kwargs)
-        self.ra = kwargs['ra'] if 'ra' in kwargs else 0.
-        self.params = ['ra']
+        self.a = kwargs['a'] if 'a' in kwargs else 0.
+        self.params = ['a']
 
     def __call__(self, r, R):
-        ra = self.ra
+        ra = self.a
         return cyfuncs.func_OM_kernel(r, R, ra)
 
 ##############################################################################

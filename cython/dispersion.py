@@ -1,7 +1,7 @@
 import numpy as np
+from sys import float_info
 from scipy.integrate import quad
 from profiles import DMProfile, StellarProfile, AnisotropyKernel
-import sys
 
 class SphericalJeansDispersion(object):
     def __init__(self, dm, stellar, anisotropy, dwarf_props, **kwargs):
@@ -55,7 +55,7 @@ class SphericalJeansDispersion(object):
     def compute(self, R):
         #called by a LogLike object
         if any([getattr(self.dm,par)<0 for par in self.dm.params]):
-            return sys.float_info.max
+            return float_info.max
         else:
             Jreduced = self.dm.cached_Jreduced( **self.dwarf_props )
             if 'with_errs' in self.dwarf_props and\
@@ -76,5 +76,5 @@ class SphericalJeansDispersion(object):
                     I_of_R = self.stellar.surface_brightness(rr)
                     sigma2[i] = integral / I_of_R / np.sqrt(Jred)
                     
-            cst = self.cst/np.sqrt(self.dm.Jcst())
+            cst = self.cst / np.sqrt(self.dm.Jcst())
             return sigma2 * self.dm.r0**3 * cst * np.power(10, self.J/2.)

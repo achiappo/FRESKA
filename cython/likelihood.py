@@ -1,6 +1,6 @@
 import numpy as np
+from sys import float_info
 from exceptions import ValueError
-import sys
 
 class LogLikelihood(object):
     def __init__(self, data, sigma, numprocs=1):
@@ -34,7 +34,7 @@ class LogLikelihood(object):
 
     def __call__(self, *par_array):
         if np.any(np.isnan(par_array)):
-            return sys.float_info.max
+            return float_info.max
         else:
             iscached, Scached = self._retrieve(*par_array)
             if iscached:
@@ -62,18 +62,5 @@ class GaussianLikelihood(LogLikelihood):
         #in case of an array of Js, one should write another scan function
         #so it might be that here only the R parallelization is in order
         S = self.dv2 + self.sigma.compute(self.R) #this is an array like R array
-        res = np.log(S) + self.Dv2/S
-        return res.sum() / 2.
-
-    def contour(self, J, r):
-        iscached, Scached = self._retrieve(r)
-        if iscached:
-            s = Scached
-        else:
-            self.sigma.setparams('J', 0)
-            self.sigma.setparams('dm_r0', r)
-            s = self.sigma.compute(self.R)
-            self._store(s, r)
-        S = self.dv2 +  s * np.power(10, J/2.)
         res = np.log(S) + self.Dv2/S
         return res.sum() / 2.
