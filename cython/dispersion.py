@@ -33,12 +33,12 @@ class SphericalJeansDispersion(object):
             self.params['ker_'+par] = self.kernel.__dict__[par]
     
     def setparams(self, name, value):
-        if name.strip('dm_') in self.dm.__dict__:
-            setattr(self.dm, name.strip('dm_'), value)
-        if name.strip('st_') in self.stellar.__dict__:
-            setattr(self.stellar, name.strip('st_'), value)
-        if name.strip('ker_') in self.kernel.__dict__:
-            setattr(self.kernel, name.strip('ker_'), value)
+        if name.split('dm_')[-1] in self.dm.__dict__:
+            setattr(self.dm, name.split('dm_')[-1], value)
+        if name.split('st_')[-1] in self.stellar.__dict__:
+            setattr(self.stellar, name.split('st_')[-1], value)
+        if name.split('ker_')[-1] in self.kernel.__dict__:
+            setattr(self.kernel, name.split('ker_')[-1], value)
         if name == 'J':
             setattr(self, name, value)
             self.params[name] = value

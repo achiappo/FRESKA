@@ -279,11 +279,11 @@ class OMKernel(AnisotropyKernel):
     """
     def __init__(self, **kwargs):
         super(OMKernel,self).__init__(**kwargs)
-        self.a = kwargs['a'] if 'a' in kwargs else 0.
-        self.params = ['a']
+        self.ra = kwargs['ra'] if 'ra' in kwargs else 0.
+        self.params = ['ra']
 
     def __call__(self, r, R):
-        ra = self.a
+        ra = self.ra
         return cyfuncs.func_OM_kernel(r, R, ra)
 
 ##############################################################################
