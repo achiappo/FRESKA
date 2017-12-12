@@ -2,3 +2,4 @@
 */*.c
 */*~
 build
+*.ipynb_checkpoints
