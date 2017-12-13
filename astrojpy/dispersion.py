@@ -81,17 +81,16 @@ class SphericalJeansDispersion(object):
             return sigma2 * self.dm.r0**3 * cst * np.power(10, self.J/2.)
 
     def _sigma_integral(self, rr, epsrel=1.e-8, epsabs=1.e-8):
-        a,b,c,r0 = self.dm.a, self.dm.b, self.dm.c, self.dm.r0
-        res = quad(self.integrand, t, np.inf, args=(t,beta,a,b,c),
+        res = quad(self.integrand, rr, np.inf, args=(rr,),
                epsabs=epsabs, epsrel=epsrel)
         if res[0]/res[1] < 10 and res[1]<1:
             #find the scale of the error and force epsrel and epsabs to 
             #aim for one order of magnitude smaller error
             eexp = ("%e"%res[1]).split("e-")[1]
             neweps = eval("1.e-%d"%(int(eexp)+1))
-            res = quad(self.integrand, t, np.inf, args=(t,beta,a,b,c),
+            res = quad(self.integrand, rr, np.inf, args=(rr,),
                        epsabs=neweps, epsrel=neweps, limit=1000)
-        return res[0], res[1]
+        return res[0]
 
     def _sigma_integral2(self, rr):
         """
