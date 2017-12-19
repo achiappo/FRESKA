@@ -92,8 +92,8 @@ def modified_betainc(double y, double bb):
     It prolongs the 
     scipy version analytically by using the recursion relation
     $$
-    I(y,b,a) = I(y,b,a+1) - \frac{\Gamma(a+b)}{\Gamma(b)\Gamma(a+1)}\left[u^b(1-u)^a\right]_0^{y}
-    $$
+		I(y,a,b) = I(y,a,b+1) - \frac{\Gamma(a+b)}{b\Gamma(b)\Gamma(a)}\left[u^a(1-u)^b\right]_0^{y}
+		$$
     Compared to the proposal by Mamon&Lokas 2004, which is not in practice 
     applicable, inverting the beta integral allows to make sure that u^b 
     is not infinite at 0.
@@ -105,8 +105,8 @@ def modified_betainc(double y, double bb):
     if b+0.5>0:
         B = scispec.betainc(0.5, b+0.5, y)
     else:
-        G = gamma(b+1) / gamma(0.5) / gamma(b+1.5)
-        B = -G * (1-y)**(b+0.5) * np.sqrt(y) + modified_betainc(y, b+1)
+        G = gamma(b+1) / gamma(0.5) / gamma(b+0.5)
+        B = modified_betainc(y, b+1) - G * (1-y)**(b+0.5) * np.sqrt(y) / (b+0.5)
     return B
     
     
