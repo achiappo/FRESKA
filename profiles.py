@@ -1,11 +1,11 @@
 from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
-from scipy.special import betainc, hyp2f1, gamma
+from scipy.special import betainc, hyp2f1, gamma, kn, gammaincc
 from scipy.integrate import quad, nquad
 from math import pi, cos, atan, asin, sqrt
 import numpy as np
 import cyfuncs
 
-##############################################################################
+###############################################################################
 
 class Profile(object):
     """
@@ -19,22 +19,30 @@ class Profile(object):
     def density(self, *args, **kwargs):
         return Exception('Not implemented')
 
+###############################################################################
+#                           STELLAR PROFILES
+# options:
+# - generalised Plummer (DOI: 10.1093/mnras/71.5.460)
+# - exponential         (DOI: 10.1111/j.1745-3933.2008.00596.x)
+# - King                (DOI: 10.1086/108756)
+# - Sersic              (1968adga.book.....S , 1997A&A...321..111P)
+
 class StellarProfile(Profile):
     """
     Define a stellar profile, for which the 2 universal parameters are
     - rh : scale radius
-    - rhoh : scale density, at scale radius
+    - nuh : scale density, at scale radius
     This is still a base class, but it implements the Abel transform for the 
     surface brightness computation, as a default for inherited classes.
     """
     def __init__(self, **kwargs):
         """
-        ensure existence of rh and rhoh attributes
+        ensure existence of rh and nuh attributes
         """
         super(StellarProfile, self).__init__(**kwargs)        
         self.rh =  kwargs['rh'] if 'rh' in kwargs else 1
-        self.rhoh = kwargs['rhoh'] if 'rhoh' in kwargs else 1
-        self.params = ['rh', 'rhoh']
+        self.nuh = kwargs['nuh'] if 'nuh' in kwargs else 1
+        self.params = ['rh', 'nuh']
 
     def surface_brightness(self, **kwargs):
         """
@@ -78,11 +86,11 @@ class genPlummerProfile(StellarProfile):
 
     def density(self, x):
         """
-        return the stellar density.
+        Return the stellar density.
         input : x=r/rh (can be array-like)
-        output : rhoh * rh * x**(-c) * (1.+x**2)**(-(5-c)/2)
+        output : nuh * rh * x**(-c) * (1.+x**2)**(-(5-c)/2)
         """
-        return self.rhoh * cyfuncs.zhao_func(x, self.a, self.b, self.c)
+        return self.nuh * cyfuncs.zhao_func(x, self.a, self.b, self.c)
 
     def surface_brightness(self, R):
         """
@@ -90,12 +98,12 @@ class genPlummerProfile(StellarProfile):
         Plummer density
         input : R
         output : 
-        rhoh * rh * (1+x*x)**(-2) if c==0 ,
-        rhoh * rh * ((2+x**2)*inv_csch(x) - np.sqrt(1+x**2))/(1+x**2)**1.5 if c==1
+        nuh * rh * (1+x*x)**(-2) if c==0 ,
+        nuh * rh * ((2+x**2)*inv_csch(x) - np.sqrt(1+x**2))/(1+x**2)**1.5 if c==1
         otherwise, default to base class Abel integration.
         """
         x = R/self.rh
-        result = self.rhoh * self.rh
+        result = self.nuh * self.rh
         c = self.c
         if c == 0: #standard Plummer
             return result * cyfuncs.plummer0_func(x)
@@ -104,6 +112,118 @@ class genPlummerProfile(StellarProfile):
         else:
             return super(genPlummerProfile, self).surface_brightness(rh=self.rh, R=R)
 
+class ExponentialProfile(object):
+    """
+    Exponential stellar density profile, with parameter rc 
+    indicating the size of a constant density core
+    """
+    def __init__(self, **kwargs):
+        super(ExponentialProfile, self).__init__(**kwargs)
+        self.rc = kwargs['rc'] if 'rc' in kwargs else 1.
+        self.params += ['rc']
+
+    def density(self, x):
+        """
+        Return the stellar density of an exponential profile
+        input : x=r/rc (can be array-like)
+        output : nuh Bessel0(x) / pi / rc
+        """
+        return self.nuh * kn(0,x) / pi / self.rc
+
+    def surface_brightness(self, R):
+        """
+        Return the surface brightness of an exponential profile
+        input : R
+        output : nuh * exp(-R/rc)
+        """
+        x = R/self.rc
+        return self.nuh * np.exp(-x)
+
+class KingProfile(StellarProfile):
+    """
+    King stellar profile, with parameters
+    - rc : core radius
+    - rlim : maximum radius
+    """
+    def __init__(self, **kwargs):
+        super(KingProfile, self).__init__(**kwargs)
+        self.rc = kwargs['rc'] if 'rc' in kwargs else 1.
+        # set a large dummy value for the maximum radius
+        self.rlim = kwargs['rlim'] if 'rlim' in kwargs else 1000. 
+        self.params += ['rc','rlim']
+
+    def density(self, x):
+        """
+        Return the stellar density of a King profile.
+        input : x=r/rc (can be array-like)
+        output : nuh * (1 + x^2 + sqrt(1+x^2)sqrt(x^2-rlim^2/rc^2))) / pi / rc
+        """
+        lc = self.rlim / self.rc
+        res = (1. + x*x + np.sqrt(1+x*x) * np.sqrt(x*x-lc*lc))
+        return self.nuh / res / pi / self.rc
+
+    def surface_brightness(self, R):
+        """
+        Return the surface brightness of a King profile
+        input : R
+        output : nuh * (1/sqrt(1+R^2/rc^2) - 1/sqrt(1+rlim^2/rc^2))
+        """
+        x = R/self.rc
+        lc = self.rlim / self.rc
+        return self.nuh * (1./np.sqrt(1.+x*x) - 1./np.sqrt(1.+lc*lc))
+
+class SersicProfile(StellarProfile):
+    """
+    Sersic stellar profile, with parameters
+    - rc : core radius
+    - n : index controlling the sharpness of logarithmic decrease
+    - bn = 2n − 1/3 + 0.009876/n 
+    """
+    def __init__(self, **kwargs):
+        super(SersicProfile, self).__init__(**kwargs)
+        self.rc = kwargs['rc'] if 'rc' in kwargs else 1.
+        self.n = kwargs['n'] if 'n' in kwargs else 1. 
+        self.params += ['rc','n']
+    
+    def density(self, x):
+        """
+        Return the stellar density.
+        input : x=r/rc (can be array-like)
+        output : nuh * bn * Int(x,inf) / n / pi
+        where 
+        Int(x,inf) = int^inf_r exp(-bn(y^(1/n)-1)) y^(1/n-2) / sqrt(1-x^2/y^2) dy
+        """
+        bn = 2./self.n - 1/3. + 0.009876/self.n 
+        
+        def integrand(y,x,bn,n): 
+            return np.exp(-bn*(y**(1./n)-1)) * y**(1./n-2.) / np.sqrt(1-x*x*y*y)
+        
+        if np.isscalar(x):
+            res = quad(integrand, x, +np.inf, args=(x,bn,n))[0]
+            return self.nuh * bn * res / pi / n
+        else:
+            res = np.zeros_like(x)
+            for i, xx in enumerate(xx):
+                res[i] = quad(integrand, xx, +np.inf, args=(xx,bn,n))[0]
+            return self.nuh * bn * res / pi / n
+
+    def surface_brightness(self, R):
+        """
+        Return the surface brightness of a Sersic profile
+        input : R
+        output : nuh * exp( -bn ((R/rc)^(1/n)-1) )
+        where bn = 2n − 1/3 + 0.009876/n 
+        """
+        x = R/self.rc
+        bn = 2./self.n - 1/3. + 0.009876/self.n 
+        return self.nuh * np.exp(-bn * (x**(1./n) - 1.))
+
+##############################################################################
+#                           DARK MATTER PROFILES
+# options:
+# - ZHAO (generalised NFW)  (DOI: 10.1086/168845, 10.1093/mnras/278.2.488 )
+# - Einasto                 (DOI: 10.1093/mnrasl/slw216)
+        
 class DMProfile(Profile):
     """ 
     Base class for the DM profile
@@ -136,50 +256,21 @@ class DMProfile(Profile):
                 J = self.Jreduced(D, theta, rt, with_errs)
                 self.__cached_Jreduced[cache_params] = J
         return J
-        
-    def Jreduced(self, D, theta, rt, with_errs=False):
-        """
-        compute the reduced J factor \int_ymin^1 dy \int_0^zmax dx f^2(r(z,y))
-        where
-        - ymin=\cos(\theta_max)
-        - z=r/r0-D'y
-        - the density reads rho(r)=rho0*f(r/r0)
-        - zmax = sqrt(r_t'**2-D'^2*(1-y^2)) with r_t'=rt/r0 and D'=D/r0.
-        The usual J factor is recovered by multiplying by 4pi*rho0^2*r0. 
-        The reduced J factor is dimensionless
-        """
-        r0 = self.r0
-        
-        Dprime = D/r0
-        rtprime = rt/r0
-        ymin = cos(np.radians(theta))
-
-        def integrand(z,y):
-            try:
-                return self.density(cyfuncs.radius(z, y, Dprime))**2
-            except (OverflowError, ZeroDivisionError):
-                return sys.float_info.max
-
-        def lim_u(y):
-            return [ 0., sqrt( rtprime*rtprime - Dprime*Dprime*(1-y*y) ) ]
-
-        def lim_y():
-            return [ ymin, 1. ]
-
-        res = nquad(integrand, ranges=[lim_u, lim_y], \
-                    opts=[{'limit':1000, 'epsabs':1.e-6, 'epsrel':1.e-8},\
-                          {'limit':1000, 'epsabs':1.e-6, 'epsrel':1.e-8}])
-        if with_errs:
-            return res[0], res[1]
-        else:
-            return res[0]
 
     def Jcst(self):
+        """
+        Dimensional factor of the J-factor
+        Given r0 in kpc and rho0 in Msun/kpc^3
+        returns a quantity with units of GeV^2/cm^5
+        """
         Msun2kpc5_GeVcm5 = 4463954.894661358
         cst = 4 * pi * self.r0 * self.rho0**2 * Msun2kpc5_GeVcm5
         return cst
     
     def Jfactor(self, D, theta, rt, with_errs=False):
+        """
+        Return the J-factor, with or without integration errors
+        """
         cst = self.Jcst()
         Jred = self.Jreduced(D, theta, rt, with_errs)
         if with_errs:
@@ -205,10 +296,13 @@ class ZhaoProfile(DMProfile):
         self.params_Jreduced = [par for par in self.params if par != 'rho0']
 
     def density(self,x):
+        """
+        (dimensionless) Zhao profile of the DM density distribution
+        """
         a, b, c = self.a, self.b, self.c
         rhosat = 1e19
         if c>1e-5:
-            if x > self.r0*(1e-10)**(1/c):
+            if x > self.r0*(1e-10)**(1./c):
                 return cyfuncs.zhao_func(x, a, b, c)
             else:
                 return rhosat
@@ -216,11 +310,131 @@ class ZhaoProfile(DMProfile):
             return cyfuncs.zhao_func(x, a, b, 0.)
 
     def mass(self, x):
+        """
+        (dimensionless) Mass function of the Zhao profile
+        """
         a, b, c = self.a, self.b, self.c
         return cyfuncs.mass_func(x, a, b, c)
 
+    def assert_range(self,a,b,c):
+        if a<0 or b<c or b<=0.5 or c>=1.5:
+            raise Exception("a,b,c values not allowed: %s, %s, %s"%\
+                            (str(a), str(b), str(c)))
+    
+    def Jreduced(self, D, theta, rt, with_errs=False):
+        """
+        # In the case of a general Zhao profile, the J integration is 
+        # more stable after a change of variable, and the separation of 
+        # the resulting double integral in two steps
+        """
+
+        a, b, c = self.a, self.b, self.c
+        r0 = self.r0
+        Dprime = D/r0
+        #rtprime = rt/r0
+        ymin = cos(np.radians(theta))
+
+        self.assert_range(a,b,c)
+        opts = {'limit':1000, 'epsabs':1.e-8, 'epsrel':1.e-8}
+
+        #first integral
+        def integrand_one(u,t,a,b,c):
+            val1 = (1+(u*t)**a)**(-2*(b-c)/a)
+            val = val1 * u**(1-2*c) / np.sqrt(u**2-1)
+            return val
+
+        def integral_one(t, a, b, c):
+            res = quad(integrand_one, 1, +np.inf, args=(t,a,b,c), **opts)
+            return res
+
+        #second integral
+        def integrand_two(t, a, b, c):
+            res = integral_one(t,a,b,c)
+            return res[0] * t**(2-2*c) / np.sqrt(1.-(t/Dprime)**2)
+
+        res = quad(integrand_two, 0, Dprime*np.sqrt(1.-ymin**2),\
+                   args=(a,b,c), **opts)
+
+        if with_errs:
+            return res[0]/Dprime**2, res[1]/Dprime**2
+        else:
+            return res[0]/Dprime**2
+
+class EinastoProfile(DMProfile):
+    """
+    class to define an Einasto DM profile
+    """
+    def __init__(self, **kwargs):
+        super(EinastoProfile, self).__init__(**kwargs)
+        self.alpha = kwargs['alpha'] if 'alpha' in kwargs else 1.
+        self.params += ['alpha']
+        self.params_Jreduced = [par for par in self.params if par != 'rho0']
+
+    def density(self,x):
+        """
+        (dimensionless) Einasto profile of the DM density distribution
+        """
+        return np.exp(-2. * (x**self.alpha - 1.) / self.alpha)
+
+    def mass(self, x):
+        """
+        (dimensionless) Mass function of the Einasto profile
+        """
+        alpha = self.alpha
+        factor = (np.exp(2) * alpha**(3.-alpha) / 8.)**(1./alpha)
+        return (1. - gammaincc(3./alpha, 2.*x**alpha/alpha)) * factor
+
+    def assert_range(self,alpha):
+        if a<0:
+            raise Exception("alpha must be positive (%g)"%alpha)
+
+    def Jreduced(self, D, theta, rt, with_errs=False):
+        r0 = self.r0
+        alpha = self.alpha
+        Dprime = D/r0
+        ymin = cos(np.radians(theta))
+
+        self.assert_range(a,b,c)
+        opts = {'limit':1000, 'epsabs':1.e-8, 'epsrel':1.e-8}
+
+        #first integral
+        def integrand_one(u,t,alpha):
+            val = np.exp(-4. * u**alpha * t**alpha / alpha)
+            return u * val / np.sqrt(u*u-1.)
+
+        def integral_one(t, alpha):
+            res = quad(integrand_one, 1, +np.inf, args=(t,alpha), **opts)
+            if res[0]/res[1] < 10 and res[1]<1:
+                #find the scale of the error and force epsrel and epsabs to 
+                #aim for one order of magnitude smaller error
+                eexp = ("%e"%res[1]).split("e-")[1]
+                neweps = eval("1.e-%d"%(int(eexp)+1))
+                res = quad(integrand_one, 1, +np.inf, args=(t,alpha),\
+                           epsabs=neweps, epsrel=neweps, limit=1000)
+            return res
+
+        #second integral
+        def integrand_two(t, alpha):
+            res = integral_one(t,alpha)
+            return res[0] * t**2 / np.sqrt(1.-(t/Dprime)**2)
+
+        res = quad(integrand_two, 0, Dprime*np.sqrt(1.-ymin**2),\
+                   args=(alpha,), **opts)
+        if res[0]/res[1] < 10 and res[1]<1:
+            #find the scale of the error and force epsrel and epsabs to 
+            #aim for one order of magnitude smaller error
+            eexp = ("%e"%res[1]).split("e-")[1]
+            neweps = eval("1.e-%d"%(int(eexp)+1))
+            res = quad(integrand_two, 0, Dprime*np.sqrt(1.-ymin**2),\
+                       args=(alpha,), epsabs=neweps, epsrel=neweps, limit=1000)
+        
+        if with_errs:
+            return res[0]/Dprime**2, res[1]/Dprime**2
+        else:
+            return res[0]/Dprime**2
+        
 ##############################################################################
-#Anisotropy kernels
+#                       ANISOTROPY KERNEL FUNCTIONS
 
 class AnisotropyKernel(object):
     """
@@ -279,25 +493,33 @@ class OMKernel(AnisotropyKernel):
     """
     def __init__(self, **kwargs):
         super(OMKernel,self).__init__(**kwargs)
-        self.a = kwargs['a'] if 'a' in kwargs else 0.
-        self.params = ['a']
+        self.ra = kwargs['ra'] if 'ra' in kwargs else 0.
+        self.params = ['ra']
 
     def __call__(self, r, R):
-        ra = self.a
+        ra = self.ra
         return cyfuncs.func_OM_kernel(r, R, ra)
 
 ##############################################################################
-#Helper functions
+#                           HELPER FUNCTIONS
 
 def build_profile(profile_type, **kwargs):
     if profile_type.upper() == 'PLUMMER':
         return genPlummerProfile(**kwargs)
+    elif profile_type.upper() == 'EXPONENTIAL':
+        return ExponentialProfile(**kwargs)
+    elif profile_type.upper() == 'KING':
+        return KingProfile(**kwargs)
+    elif profile_type.upper() == 'SERSIC':
+        return SersicProfile(**kwargs)
     elif profile_type.upper() == 'NFW':
         return ZhaoProfile(a=1, b=3, c=1, **kwargs)
     elif profile_type.upper() == 'ZHAO':
         if not set(['a', 'b', 'c']).issubset(kwargs):
             raise Exception('ZHAO profiles require inputs for exponents a, b, and c')
         return ZhaoProfile(**kwargs)
+    elif profile_type.upper() == 'EINASTO':
+        return EinastoProfile(**kwargs)
     else:
         raise ValueError("Unrecognized type %s"%profile_type)
 
@@ -312,3 +534,4 @@ def build_kernel(kernel_type, **kwargs):
         return OMKernel(**kwargs)
     else:
         raise ValueError("Unrecognized anisotropy type %s"%kernel_type)
+
