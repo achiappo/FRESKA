@@ -19,23 +19,23 @@ def load_data(gal, directory='.'):
 
 def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors=True):
 
-    data = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_nonPlum
-            '/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_Plum
-            '/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_nonPlum
-            '/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_Plum
-            '/data/gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_nonPlum
-            '/data/gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_Plum
-            '/data/gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Cusp_nonPlum
-            '/data/gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset)]      # OsipkMerr_Cusp_Plum
+    data = ['gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_nonPlum
+            'gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_Plum
+            'gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_nonPlum
+            'gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_Plum
+            'gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_nonPlum
+            'gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_Plum
+            'gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Cusp_nonPlum
+            'gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset)]      # OsipkMerr_Cusp_Plum
 
-    err  = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_nonPlum
-            '/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_Plum
-            '/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_nonPlum
-            '/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_Plum
-            '/data/gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_nonPlum
-            '/data/gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_Plum
-            '/data/gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Cusp_nonPlum
-            '/data/gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset)]  # OsipkMerr_Cusp_Plum
+    err  = ['gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_nonPlum
+            'gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_Plum
+            'gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_nonPlum
+            'gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_Plum
+            'gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_nonPlum
+            'gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_Plum
+            'gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Cusp_nonPlum
+            'gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset)]  # OsipkMerr_Cusp_Plum
 
     print 'Using ', homedir+data[mod]
     x,y,z,vx,vy,vz = np.loadtxt(homedir+data[mod],unpack=True)

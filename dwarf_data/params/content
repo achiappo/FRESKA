@@ -1,0 +1,11 @@
+name
+distance          [kpc]
+half-light radius [kpc]
+tidal radius      [kpc]
+arbitrary Like    [kpc]
+log10(M(300pc))   [Msun]
+log10(rs [kpc])
+beta
+a
+b
+c 
