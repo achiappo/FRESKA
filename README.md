@@ -1,7 +1,7 @@
 # FRESKA
 Frequentist Stellar Kinematics Analyser
-# ASTROJPY
-The Python script ASTROJPY allows to build the (-log) profile Likelihood for the astrophysical factor, J, of Dwarf Spheroidal Satellite Galaxies (dSPhs) of the Milky Way. It uses as input the kinematic data from the dSphs member stars. It also performs a basic statistical analysis, consisting in the determination of the Maximum Likelihood value of J and its Confidence Intervals. This README contains the instructions on how to use it correctly.
+
+The Python script FRESKA allows to build the (-log) profile Likelihood for the astrophysical factor, J, of Dwarf Spheroidal Satellite Galaxies (dSPhs) of the Milky Way. It uses as input the kinematic data from the dSphs member stars. It also performs a basic statistical analysis, consisting in the determination of the Maximum Likelihood value of J and its Confidence Intervals. This README contains the instructions on how to use it correctly.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
