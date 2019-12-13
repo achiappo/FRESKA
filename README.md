@@ -10,32 +10,38 @@ This README contains the instructions on how to use it correctly.
 
 ### MODULES
 
-##### cyfuncs.pyx   
+##### cyfuncs.pyx
 This file contains the definitions of various functions used throughout. For a faster execution, these are written in a format 
 compatible with Python Cythonize package. In order to use it, it must first be compiled with a C++ compiler. A Python script 
 which performs this operation is also included, "setup.py", which should be executed with the following command
 
-$ python setup.py build_ext --inplace
+'$ python setup.py build_ext --inplace'
 
-UTILS.PY  
+##### utils.py
 This file contains useful functions to load the data and to evelope the result a MCMC scan.
 
-PROFILES.PY  
+##### profiles.py
 This file contains the definitions of the classes to compute the properties of the two main components of dwarf satellite 
 galaxies: stars and Dark Matter.
 
-DISPERSION.PY  
+##### dispersion.py
 This file contains the class to compute the stellar line-of-sight velocity dispersion, as given by Jeans equation.
 
-LIKELIHOOD.PY  
+##### likelihood.py
 This file contains the classes to compute the (negative) loglikelihood of the stellar kinematic data, given the model 
 parameters entering the Jeans equation formalism.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-## SCRIPTS
+### SCRIPTS
 
-PROFILE
+##### profiler_real.py
+This template script is meant to illustrate how the modules and methods entering this package are supposed to be used to 
+correctly perform a Jeans analysis using the (measured) stellar kinematic data from a dwarf spheroidal satellite galaxy.
+
+##### profiler_sims.py
+This template script is meant to illustrate how the modules and methods entering this package are supposed to be used to 
+correctly perform a Jeans analysis using the simulated stellar kinematic data taken from _Gaia Challenge_ simulation suite.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
