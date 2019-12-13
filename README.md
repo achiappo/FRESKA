@@ -8,7 +8,7 @@ This README contains the instructions on how to use it correctly.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-#### MODULES
+######## MODULES
 
 **cyfuncs.pyx**  
 This file contains the definitions of various functions used throughout. For a faster execution, these are written in a format 
@@ -33,7 +33,7 @@ parameters entering the Jeans equation formalism.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-#### SCRIPTS
+######## SCRIPTS
 
 **profiler\_real.py**  
 This template script is meant to illustrate how the modules and methods entering this package are supposed to be used to 
@@ -45,7 +45,7 @@ correctly perform a Jeans analysis using the simulated stellar kinematic data ta
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-## DATA INPUT  
+#### DATA INPUT  
 
 Data should be input into the code as a three-columns datafile consisting of
 
@@ -57,11 +57,15 @@ Alternatvely, the user can customize the data input by modifying the function *l
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-## DATA OUTPUT  
+#### DATA OUTPUT  
 
 The code produces two files:
 
-a) "Like.npy" consists of the 2D, vertically stacked array of the profile likelihood components of the dSphs J factor. Its extension means that it is a python numpy-saved objected, thus loadable with the method *numpy.load* from within a python session or script. J is given in log10 basis and has units of Gev^2/cm^5. 
+a) "Like.npy" consists of the 2D, vertically stacked array of the profile likelihood components of the dSphs J factor. Its 
+extension means that it is a python numpy-saved objected, thus loadable with the method *numpy.load* from within a python 
+session or script. J is given in log10 basis and has units of Gev^2/cm^5. 
 
-b) "results.yaml" contains a python dictionary with the results of the statistical analysis on the profile
-  Likelihood curve. These consist of: its minimum (corresponfing to the Maximum Likelihood J value); the edges of the 1,2 and 3-sigma confidence intervals of the minimum; the velocity anisotropy parameter (r_a in the Osipkov-Merrit case, b in the constant-beta case) 
+b) "results.yaml" contains a python dictionary with the results of the statistical analysis on the profile Likelihood curve. 
+These consist of: its minimum (corresponfing to the Maximum Likelihood J value); the edges of the 1,2 and 3-sigma confidence 
+intervals of the minimum; the velocity anisotropy parameter (r_a in the Osipkov-Merrit case, b in the constant-beta case) 
+
