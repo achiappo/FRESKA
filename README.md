@@ -19,7 +19,7 @@ Data should be input into the code as a three-columns datafile consisting of
 2) measured line-of-sight velocity of each star (in units of km/s)
 3) measurement error on the line-of-sight velocity in (in units of km/s)
 
-Alternatvely, the user can customize the data input by modifying the function *get_data(gal)* contained in functions.pyx 
+Alternatvely, the user can customize the data input by modifying the function *load_data(gal)* contained in the *utils* module 
 
 -------------------------------------------------------------------------------------------------------------------------------
 

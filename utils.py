@@ -19,25 +19,24 @@ def load_data(gal, directory='.'):
 
 def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors=True):
 
-    data = ['gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_nonPlum
-            'gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_Plum
-            'gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_nonPlum
-            'gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_Plum
-            'gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_nonPlum
-            'gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_Plum
-            'gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Cusp_nonPlum
-            'gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset)]      # OsipkMerr_Cusp_Plum
+    data = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_nonPlum
+            '/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Core_Plum
+            '/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_nonPlum
+            '/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # Isotrop_Cusp_Plum
+            '/data/gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_nonPlum
+            '/data/gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Core_Plum
+            '/data/gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset),      # OsipkMerr_Cusp_nonPlum
+            '/data/gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i.dat'%(dataSize,dset)]      # OsipkMerr_Cusp_Plum
 
-    err  = ['gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_nonPlum
-            'gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_Plum
-            'gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_nonPlum
-            'gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_Plum
-            'gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_nonPlum
-            'gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_Plum
-            'gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Cusp_nonPlum
-            'gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset)]  # OsipkMerr_Cusp_Plum
-
-    print 'Using ', homedir+data[mod]
+    err  = ['/data/gs100_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_nonPlum
+            '/data/gs010_bs050_rcrs100_rarcinf_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Core_Plum
+            '/data/gs100_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_nonPlum
+            '/data/gs010_bs050_rcrs025_rarcinf_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # Isotrop_Cusp_Plum
+            '/data/gs100_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_nonPlum
+            '/data/gs010_bs050_rcrs025_rarc100_core_0400mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Core_Plum
+            '/data/gs100_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset),  # OsipkMerr_Cusp_nonPlum
+            '/data/gs010_bs050_rcrs010_rarc100_cusp_0064mpc3_df_%i_%i_err.dat'%(dataSize,dset)]  # OsipkMerr_Cusp_Plum
+    
     x,y,z,vx,vy,vz = np.loadtxt(homedir+data[mod],unpack=True)
     R = np.sqrt(x**2+y**2) # assumed direction of observation along z-axis for simplicity (as suggested on the Gaia wiki)
     d = np.sqrt(x**2+y**2+(D-z)**2)
@@ -61,7 +60,7 @@ def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors=Tr
         rh = 0.25
     else:
         rh = 0.1
-
+    
     cst = 1. if mod%2 == 0 else 0.1
     r0_true = 1.
     rho0_true = 40.e7 if mod in [0,1,4,5] else 6.4e7
@@ -69,9 +68,10 @@ def load_gaia(homedir, MockSize, dataSize, dset, mod, D, with_velocity_errors=Tr
     return R, v, dv, rh, cst, r0_true, rho0_true
 
 def envelope(samples, lnprobs, param=0):
-    """ tool to envelope the result of a MCMC scan
-        to the lowermost -lnLike values along an 
-        ordered direction of the samples 
+    """ 
+    tool to envelope the result of a MCMC scan
+    to the lowermost -lnLike values along an 
+    ordered direction of the samples 
     """
     # verify that the parameter chosen corresponds 
     # to the dimensionality of the samples array
