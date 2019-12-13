@@ -1,7 +1,6 @@
 
 __author__ = "Andrea Chiappo"
 __email__ = "chiappo.andrea@gmail.com"
-__version__ = 1.0.0
 
 #
 # Template code to perform a Jeans analysis

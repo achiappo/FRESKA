@@ -1,3 +1,14 @@
+
+__author__ = "Johann Cohen Tanugi, Andrea Chiappo"
+__email__ = "chiappo.andrea@gmail.com"
+
+#
+# This module contains the classes to compute the properties 
+# of the two (main) components of dwarf galaxies: 
+# - stellar: number density and surface brightness profiles 
+# - dark matter: density and mass profiles, the astrophysical factor (J-factor) 
+#
+
 from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
 from scipy.special import betainc, hyp2f1, gamma, kn, gammaincc
 from scipy.integrate import quad, nquad
@@ -504,6 +515,18 @@ class OMKernel(AnisotropyKernel):
 #                           HELPER FUNCTIONS
 
 def build_profile(profile_type, **kwargs):
+    """
+    helper function to build an istance of an object describing either
+    the stellar or dark matter components of a dwarf galaxy
+    
+    profile_type = 
+        - options available for stellar component:
+            Plummer, Exponential, King, Sersic
+        - options available for dark matter component:
+            NFW, Zhao, Einasto
+    
+    **kwargs = any argument to be passed to the corresponding profile
+    """
     if profile_type.upper() == 'PLUMMER':
         return genPlummerProfile(**kwargs)
     elif profile_type.upper() == 'EXPONENTIAL':
@@ -514,16 +537,27 @@ def build_profile(profile_type, **kwargs):
         return SersicProfile(**kwargs)
     elif profile_type.upper() == 'NFW':
         return ZhaoProfile(a=1, b=3, c=1, **kwargs)
-    elif profile_type.upper() == 'ZHAO':
-        if not set(['a', 'b', 'c']).issubset(kwargs):
-            raise Exception('ZHAO profiles require inputs for exponents a, b, and c')
-        return ZhaoProfile(**kwargs)
     elif profile_type.upper() == 'EINASTO':
         return EinastoProfile(**kwargs)
+    elif profile_type.upper() == 'ZHAO':
+        if not set(['a', 'b', 'c']).issubset(kwargs):
+            raise Exception('ZHAO profiles require inputs for exponents a,b,c')
+        return ZhaoProfile(**kwargs)
     else:
         raise ValueError("Unrecognized type %s"%profile_type)
 
 def build_kernel(kernel_type, **kwargs):
+    """
+    helper function to build an istance of an object to evaluate 
+    the kernel function encoding anisotropy profile of the 
+    stellar motion within the analysed dwarf galaxy
+    
+    kernel_type = 
+        - 'iso' : isotropic stellar velocities
+        - 'rad' : radially biased stellar velocities  
+        - 'om'  : Osipkov-Merritt stellar velocity anistropy profile
+        - 'constbeta' : constant degree BETA of stellar velocity anisotropy
+    """
     if kernel_type.upper()=='ISO':
         return IsotropicKernel(**kwargs)
     elif kernel_type.upper()=='RAD':
