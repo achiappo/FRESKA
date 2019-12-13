@@ -8,7 +8,7 @@ This README contains the instructions on how to use it correctly.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-######## MODULES
+#### MODULES
 
 **cyfuncs.pyx**  
 This file contains the definitions of various functions used throughout. For a faster execution, these are written in a format 
@@ -33,7 +33,7 @@ parameters entering the Jeans equation formalism.
 
 -------------------------------------------------------------------------------------------------------------------------------
 
-######## SCRIPTS
+#### SCRIPTS
 
 **profiler\_real.py**  
 This template script is meant to illustrate how the modules and methods entering this package are supposed to be used to 
