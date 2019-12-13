@@ -2,9 +2,10 @@
 __author__ = "Johann Cohen Tanugi, Andrea Chiappo"
 __email__ = "chiappo.andrea@gmail.com"
 
+#
 # This module contains the classes to compute the (log)likelihood 
-# of the stellar kinematic data given a certain set of parameter 
-# values entering the model, i.e. the Jeans equation formalism
+# of the stellar kinematic data given a certain set of model 
+# parameter values entering Jeans equation formalism
 #
 # Currently, only one a Gaussian likelihood of the stellar 
 # line-of-sight velocities is implemented
