@@ -9,10 +9,25 @@ This README contains the instructions on how to use it correctly.
 -------------------------------------------------------------------------------------------------------------------------------
 
 CYFUNCS.PYX MODULE
-This file contains the definitions of various functions used throughout. For a faster execution, these are
-written in a format compatible with Python Cythonize package. In order to use it, it must first be compiled with a C++ compiler. A Python script which does this is also included, "setup.py", which should be executed with the following command
+This file contains the definitions of various functions used throughout. For a faster execution, these are written in a format 
+compatible with Python Cythonize package. In order to use it, it must first be compiled with a C++ compiler. A Python script 
+which performs this operation is also included, "setup.py", which should be executed with the following command
 
 $ python setup.py build_ext --inplace
+
+UTILS.PY MODULE
+This file contains useful functions to load the data and to evelope the result a MCMC scan.
+
+PROFILES.PY MODULE
+This file contains the definitions of the classes to compute the properties of the two main components of dwarf satellite 
+galaxies: stars and Dark Matter.
+
+DISPERSION.PY MODULE
+This file contains the class to compute the stellar line-of-sight velocity dispersion, as given by Jeans equation.
+
+LIKELIHOOD.PY MODULE
+This file contains the classes to compute the (negative) loglikelihood of the stellar kinematic data, given the model 
+parameters entering the Jeans equation formalism.
 
 -------------------------------------------------------------------------------------------------------------------------------
 

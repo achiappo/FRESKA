@@ -3,10 +3,10 @@ __author__ = "Johann Cohen Tanugi, Andrea Chiappo"
 __email__ = "chiappo.andrea@gmail.com"
 
 #
-# This module contains the class to compute the 
-# stellar line-of-sight velocity dispersion sigma2_los(R)
-# (evaluated at the projected radial distance R from the center of the system)
-#
+# This module contains the class to compute the stellar line-of-sight
+# velocity dispersion sigma2_los(R), evaluated at the projected radial 
+# distance R from the center of the system, as given by Jeans equation
+# 
 
 import numpy as np
 from sys import float_info
