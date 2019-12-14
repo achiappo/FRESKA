@@ -9,7 +9,6 @@ __email__ = "chiappo.andrea@gmail.com"
 # - dark matter: density and mass profiles, the astrophysical factor (J-factor) 
 #
 
-from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
 from scipy.special import betainc, hyp2f1, gamma, kn, gammaincc
 from scipy.integrate import quad, nquad
 from math import pi, cos, atan, asin, sqrt
@@ -85,9 +84,9 @@ class genPlummerProfile(StellarProfile):
         """
         super(genPlummerProfile, self).__init__(**kwargs)
         if 'a' in kwargs or 'b' in kwargs:
-            print "exponent parameters a and b are fixed to 2 and 5, "+\
+            print("exponent parameters a and b are fixed to 2 and 5, "+\
             "respectively, in generalized Plummer profiles. "+\
-            "Use ZhaoProfile() instead."
+            "Use ZhaoProfile() instead.")
         self.a = 2
         self.b = 5
         # default to Plummer
@@ -187,8 +186,8 @@ class SersicProfile(StellarProfile):
     """
     Sersic stellar profile, with parameters
     - rc : core radius
-    - n : index controlling the sharpness of logarithmic decrease
-    - bn = 2n − 1/3 + 0.009876/n 
+    - n  : index controlling the sharpness of logarithmic decrease
+    - bn = 2n - 1/3 + 0.009876/n 
     """
     def __init__(self, **kwargs):
         super(SersicProfile, self).__init__(**kwargs)
@@ -223,7 +222,7 @@ class SersicProfile(StellarProfile):
         Return the surface brightness of a Sersic profile
         input : R
         output : nuh * exp( -bn ((R/rc)^(1/n)-1) )
-        where bn = 2n − 1/3 + 0.009876/n 
+        where bn = 2n - 1/3 + 0.009876/n 
         """
         x = R/self.rc
         bn = 2./self.n - 1/3. + 0.009876/self.n 
@@ -238,7 +237,6 @@ class SersicProfile(StellarProfile):
 class DMProfile(Profile):
     """ 
     Base class for the DM profile
-    contains the generic formula for the J-factor calculation
     """
     def __init__(self, **kwargs):
         super(DMProfile, self).__init__(**kwargs)
