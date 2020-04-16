@@ -8,8 +8,8 @@ __email__ = "chiappo.andrea@gmail.com"
 # dwarf spheroidal satellite galaxy
 #
 # outputs:  
-# - .npy file containing the profile likelihood of the J factor
-# - .yaml file containing the the results of statistical inference
+# - npy file containing the sampled parameter coordinates
+# - npy file containing the corresponding likelihood values 
 #
 
 import numpy as np
