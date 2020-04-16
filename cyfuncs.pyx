@@ -1,11 +1,19 @@
+
+__author__ = "Johann Cohen Tanugi, Andrea Chiappo"
+__email__ = "chiappo.andrea@gmail.com"
+
+##############################################################################
+# module containing cythonizable functions
+# to speed up evaluation of core mathematical calculations via C language
+# to compile with the following command:
+# python setup.py build_ext --inplace
+
 from exceptions import Exception, ValueError, OverflowError, ZeroDivisionError
 from math import pi, atan, asin, sqrt
 import numpy as np
 from scipy import integrate as sciint
 from scipy import special as scispec
 
-# cythonizable functions
-##############################################################################
 # stellar component
 
 def _inv_csch(double x):
